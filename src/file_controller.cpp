@@ -17,11 +17,8 @@ void file_controller::get(const HTTPP::HTTP::Request& request, HTTPP::HTTP::Resp
 {
   path file(base_dir);  
   auto uri = request.uri;
-  std::cout << uri <<std::endl;
   if(uri == "/") uri = "index.html";
-  std::cout << uri <<std::endl;
   file /= uri.to_string();
-  std::cout << file <<std::endl;
   if(exists(file))
   { 
     std::stringstream ss;
@@ -38,10 +35,14 @@ void file_controller::get(const HTTPP::HTTP::Request& request, HTTPP::HTTP::Resp
 }
 std::string file_controller::get_mime_type(const std::string& file)
 {
+  if(file.rfind(".css") == (file.length() - 4))
+  {
+    //magic returns just text/plain
+    return "text/css";
+  }
   magic_t myt = magic_open(MAGIC_CONTINUE|MAGIC_ERROR/*|MAGIC_DEBUG*/|MAGIC_MIME_TYPE|MAGIC_MIME_ENCODING);
   magic_load(myt,NULL);
   std::string mime = magic_file(myt, file.c_str());
-  std::cout << mime <<std::endl;
   magic_close(myt);
   return mime;
 }
