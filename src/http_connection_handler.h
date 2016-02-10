@@ -18,6 +18,7 @@ public:
 private:
   typedef std::unique_ptr<http_controller> controller_ptr;
   controller_ptr files;
+  controller_ptr apis;
 };
 
 #endif // HTTP_CONNECTION_HANDLER_H

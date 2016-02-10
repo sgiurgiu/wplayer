@@ -26,8 +26,12 @@ set(SOURCE_FILES src/main.cpp
               src/mpv_manager.cpp
               src/http_controller.cpp
               src/file_controller.cpp
+              src/api_controller.cpp
+              src/files_listing_controller.cpp
+              src/movie_controller.cpp
               src/http_connection_handler.cpp
-              src/http_config.cpp)
+              src/http_config.cpp
+              src/magic_handler.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 

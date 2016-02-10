@@ -27,6 +27,7 @@ int main(int argc, char **argv) {
   server.start();
   http_config config;
   config.files_folder = "web";
+  config.multimedia_folders.emplace_back("/mnt/homebackup/Downloads/complete/");
   http_connection_handler handler(config);
   server.setSink(std::ref(handler));
   server.bind("localhost", "8080");

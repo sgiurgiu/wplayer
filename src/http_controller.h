@@ -18,7 +18,8 @@ public:
   virtual void post(const HTTPP::HTTP::Request& request, HTTPP::HTTP::Response& response, const std::vector<char>& body);
   virtual void put(const HTTPP::HTTP::Request& request, HTTPP::HTTP::Response& response, const std::vector<char>& body);
   virtual void delete_(const HTTPP::HTTP::Request& request, HTTPP::HTTP::Response& response);
-  
+protected:
+  std::string get_controller_uri(const HTTPP::HTTP::Request& request,const std::string& base) const;
 };
 
 #endif // HTTP_CONTROLLER_H

@@ -1,0 +1,22 @@
+<div class="row">
+	<h4>Files Listing</h4>
+</div>
+<div class="row">
+	<table class="table table-condensed">
+		<thead>
+			<td width="1%">#</td>
+			<td width="50%">Name</td>
+			<td width="20%">Size</td>
+		</thead>
+		<tbody>
+			<tr ng-repeat="file in files_list">
+				<td>{{$index+1}}</td>
+				<td>
+					<i class="fa {{file.type==='dir'?'fa-folder':'fa-file'}}"></i>
+					{{file.name}}
+				</td>
+				<td>{{file.type==='file'?file.size:''}}</td>
+			</tr>
+		</tbody>
+	</table>
+</div>

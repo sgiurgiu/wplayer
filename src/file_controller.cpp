@@ -1,5 +1,5 @@
 #include "file_controller.h"
-
+#include "magic_handler.h"
 #include <iostream>
 #include <fstream>
 #include <boost/filesystem.hpp>
@@ -9,15 +9,17 @@ using namespace boost::filesystem;
 using namespace HTTPP;
 using namespace HTTPP::HTTP;
 
-file_controller::file_controller(const std::string& dir):base_dir(dir)
-{
 
+file_controller::file_controller(const std::string& dir):base_dir(dir),magic(std::make_unique<magic_handler>())
+{
 }
+file_controller::~file_controller() = default;  
+
 void file_controller::get(const HTTPP::HTTP::Request& request, HTTPP::HTTP::Response& response)
 {
   path file(base_dir);  
   auto uri = request.uri;
-  if(uri == "/") uri = "index.html";
+  if(uri == "/" || uri == "/current" || uri == "/movies") uri = "index.html";
   file /= uri.to_string();
   if(exists(file))
   { 
@@ -37,12 +39,12 @@ std::string file_controller::get_mime_type(const std::string& file)
 {
   if(file.rfind(".css") == (file.length() - 4))
   {
-    //magic returns just text/plain
     return "text/css";
   }
-  magic_t myt = magic_open(MAGIC_CONTINUE|MAGIC_ERROR/*|MAGIC_DEBUG*/|MAGIC_MIME_TYPE|MAGIC_MIME_ENCODING);
-  magic_load(myt,NULL);
-  std::string mime = magic_file(myt, file.c_str());
-  magic_close(myt);
-  return mime;
+  if(file.rfind(".js") == (file.length() - 3))
+  {
+    return "application/javascript; charset=UTF-8";
+  }
+  
+  return magic->get_mime(file);
 }

@@ -1,11 +1,13 @@
 #include "http_connection_handler.h"
 #include "file_controller.h"
+#include "api_controller.h"
 
 using namespace HTTPP;
 using namespace HTTPP::HTTP;
 
 
-http_connection_handler::http_connection_handler(const http_config& config):files(std::make_unique<file_controller>(config.files_folder))
+http_connection_handler::http_connection_handler(const http_config& config):
+  files(std::make_unique<file_controller>(config.files_folder)),apis(std::make_unique<api_controller>(config))
 {
 
 }
@@ -23,10 +25,11 @@ void http_connection_handler::operator()(Connection* connection)
         {
             throw HTTPP::UTILS::convert_boost_ec_to_std_ec(ec);
         }
-        http_controller* controller = nullptr;
+        http_controller* controller = nullptr;        
+        std::cout << request.uri << std::endl;
         if(request.uri.starts_with("/api"))
-        {
-          //api controller
+        {          
+          controller = apis.get();
         }
         else
         {
