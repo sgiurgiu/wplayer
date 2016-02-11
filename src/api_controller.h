@@ -16,12 +16,20 @@ public:
     virtual void put(const HTTPP::HTTP::Request& request, HTTPP::HTTP::Response& response, const std::vector< char >& body);
     virtual void delete_(const HTTPP::HTTP::Request& request, HTTPP::HTTP::Response& response);
 private:
-    template <typename Callable>
-    bool call_sub_controller(Callable&& cb,const HTTPP::HTTP::Request& request, HTTPP::HTTP::Response& response);
-    template <typename Callable>
-    bool call_sub_controller(Callable&& cb,const HTTPP::HTTP::Request& request, HTTPP::HTTP::Response& response, const std::vector< char >& body);
-    /*template <typename Callable,typename Req,typename...Arguments>
-    bool call_sub_controller(Callable&& cb,Req& request, Arguments&&...params);    */
+    template <typename Callable,typename Req,typename...Arguments>
+    bool dispatch(Callable&& cb,Req& request, Arguments&&...params)
+    {
+      auto ident = get_controller_identifier(request);
+      auto controller = sub_controllers.find(ident);
+      bool found = (controller != sub_controllers.end());
+      if( found )
+      {
+        auto new_req = request;
+        new_req.uri = get_controller_uri(request,"/api");
+        ((controller->second.get())->*cb)(new_req,std::forward<Arguments>(params)...);
+      }
+      return found;      
+    }
     std::string get_controller_identifier(const HTTPP::HTTP::Request& request) const;
     typedef std::unordered_map<std::string,std::unique_ptr<http_controller>> controllers_map;
     controllers_map sub_controllers;
