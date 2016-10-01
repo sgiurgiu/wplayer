@@ -7,15 +7,14 @@ add_definitions(-std=c++14 -Wall -pedantic -Wextra -DBOOST_ALL_DYN_LINK)
 set(Boost_USE_STATIC_LIBS        ON)
 set(Boost_USE_MULTITHREADED      ON)
 
-find_package( Boost 1.58 REQUIRED program_options filesystem system thread log log_setup)
+find_package(Boost 1.58 REQUIRED program_options filesystem system thread log log_setup)
 find_package(OpenSSL REQUIRED)
-find_library(COMMONPP_LIB commonpp)
 find_library(MAGIC_LIB magic)
+find_library(UCHARDET_LIB uchardet)
 
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}:/usr/local/lib/pkgconfig/")
 find_package(PkgConfig REQUIRED)
 pkg_search_module(MPV REQUIRED /usr/local/lib/pkgconfig/mpv.pc)
-#pkg_search_module(HTTP REQUIRED libnghttp2)
 
 include_directories(${Boost_INCLUDE_DIRS}) 
 link_directories(${Boost_LIBRARY_DIRS} ${MPV_LIBDIR})
@@ -37,9 +36,10 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${MPV_STATIC_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} ${COMMONPP_LIB})
 target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${MAGIC_LIB})
+target_link_libraries(${PROJECT_NAME} ${UCHARDET_LIB})
+
 target_link_libraries(${PROJECT_NAME} pthread)
 target_compile_options(${PROJECT_NAME} PUBLIC ${MPV_CFLAGS_OTHER})
 

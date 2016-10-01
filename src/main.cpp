@@ -21,29 +21,32 @@ int main(int argc, char **argv)
     crow::SimpleApp app;
         
 
+    CROW_ROUTE(app,"/api/files")        
+    ([&files_listing](){
+        return files_listing.get("");
+    });    
     CROW_ROUTE(app,"/api/files/<path>")        
     ([&files_listing](const std::string& path){
         return files_listing.get(path);
     });    
     
 
-    CROW_ROUTE(app,"/<path>")
-    .methods("GET"_method)
-    ([&files](const std::string& path) {
-        return files.get_file_contents(path);
-    });
-
-    CROW_ROUTE(app,"/")
-    .methods("GET"_method)
-    ([&files]() {
-        return files.get_file_contents("index.html");
-    });
     CROW_ROUTE(app,"/current")
     .methods("GET"_method)
     ([&files]() {
         return files.get_file_contents("index.html");
     });
     CROW_ROUTE(app,"/movies")
+    .methods("GET"_method)
+    ([&files]() {
+        return files.get_file_contents("index.html");
+    });
+    CROW_ROUTE(app,"/<path>")
+    .methods("GET"_method)
+    ([&files](const std::string& path) {
+        return files.get_file_contents(path);
+    });
+    CROW_ROUTE(app,"/")
     .methods("GET"_method)
     ([&files]() {
         return files.get_file_contents("index.html");
