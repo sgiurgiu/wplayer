@@ -4,8 +4,6 @@ movie_controller::movie_controller()
 {
 
 }
-void movie_controller::get(const HTTPP::HTTP::Request& request, HTTPP::HTTP::Response& response)
+void movie_controller::get(const std::string& path)
 {
-  response.setCode(HTTPP::HTTP::HttpCode::Ok);
-  response.setBody("from movie_controller");
 }

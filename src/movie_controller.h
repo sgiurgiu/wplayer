@@ -1,13 +1,13 @@
 #ifndef MOVIE_CONTROLLER_H
 #define MOVIE_CONTROLLER_H
 
-#include "http_controller.h"
+#include <string>
 
-class movie_controller : public http_controller
+class movie_controller
 {
 public:
     movie_controller();
-    virtual void get(const HTTPP::HTTP::Request& request, HTTPP::HTTP::Response& response);
+    virtual void get(const std::string& path);
 };
 
 #endif // MOVIE_CONTROLLER_H

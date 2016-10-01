@@ -17,7 +17,7 @@ class magic_handler
 {
 public:
   magic_handler():
-    magic(magic_open(MAGIC_CONTINUE|MAGIC_ERROR/*|MAGIC_DEBUG*/|MAGIC_MIME_TYPE|MAGIC_MIME_ENCODING), magic_deleter())
+    magic(magic_open(MAGIC_ERROR/*|MAGIC_DEBUG*/|MAGIC_MIME), magic_deleter())
   {
     magic_load(magic.get(),NULL);
   }
