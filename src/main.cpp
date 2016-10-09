@@ -5,19 +5,30 @@
 
 #include "crow/crow_all.h"
 
-int main(int argc, char **argv) 
+#include <log4cxx/basicconfigurator.h>
+#include <log4cxx/propertyconfigurator.h>
+#include <log4cxx/logger.h>
+
+int main(int /*argc*/, char** /*argv*/)
 { 
+
+
+    http_config config;
+    config.files_folder = "web";
+    config.multimedia_folders["All Aboard"]="/mnt/homebackup/Downloads/complete/";
+
+    log4cxx::BasicConfigurator::configure();
+    log4cxx::LoggerPtr logger(log4cxx::Logger::getRootLogger());
+    logger->setLevel(log4cxx::Level::getDebug());
+
+    file_controller files(config.files_folder);
+    files_listing_controller files_listing(config);
+
     if(false)
     {
         daemon(0,0);
     }
-    http_config config;
-    config.files_folder = "web";
-    config.multimedia_folders["All"]="/mnt/homebackup/Downloads/complete/";
-    
-    file_controller files(config.files_folder);
-    files_listing_controller files_listing(config);
-    
+
     crow::SimpleApp app;
         
 
@@ -25,7 +36,7 @@ int main(int argc, char **argv)
     ([&files_listing](const std::string& set,const std::string& path){
         return files_listing.get(set,path);        
     });    
-    CROW_ROUTE(app,"/api/files/<string>")        
+    CROW_ROUTE(app,"/api/files/<string>/")
     ([&files_listing](const std::string& set){
         return files_listing.get(set,"");        
     });      
