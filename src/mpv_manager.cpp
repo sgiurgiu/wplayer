@@ -12,7 +12,8 @@ mpv_manager_impl::~mpv_manager_impl()
 
 void mpv_manager_impl::show_window()
 {  
-  putenv("DISPLAY=:0");
+  const char* env = "DISPLAY=:0";    
+  putenv((char*)env);
   //mpv_set_option_string(handle.get(), "input-default-bindings", "yes");
   //mpv_set_option_string(handle.get(), "input-vo-keyboard", "yes");  
   mpv_set_option_string(handle.get(), "vo", "opengl-hq,opengl,vdpau,xv,");  

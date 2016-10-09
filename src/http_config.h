@@ -2,12 +2,13 @@
 #define HTTP_CONFIG_H
 
 #include <string>
-#include <vector>
+#include <map>
 
+typedef std::map<std::string,std::string> folders;
 struct http_config
 {
     std::string files_folder = "";
-    std::vector<std::string> multimedia_folders;
+    folders multimedia_folders;
 };
 
 #endif // HTTP_CONFIG_H

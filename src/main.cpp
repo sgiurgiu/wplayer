@@ -13,7 +13,7 @@ int main(int argc, char **argv)
     }
     http_config config;
     config.files_folder = "web";
-    config.multimedia_folders.emplace_back("/mnt/homebackup/Downloads/complete/");
+    config.multimedia_folders["All"]="/mnt/homebackup/Downloads/complete/";
     
     file_controller files(config.files_folder);
     files_listing_controller files_listing(config);
@@ -21,13 +21,17 @@ int main(int argc, char **argv)
     crow::SimpleApp app;
         
 
+    CROW_ROUTE(app,"/api/files/<string>/<path>")        
+    ([&files_listing](const std::string& set,const std::string& path){
+        return files_listing.get(set,path);        
+    });    
+    CROW_ROUTE(app,"/api/files/<string>")        
+    ([&files_listing](const std::string& set){
+        return files_listing.get(set,"");        
+    });      
     CROW_ROUTE(app,"/api/files")        
     ([&files_listing](){
-        return files_listing.get("");
-    });    
-    CROW_ROUTE(app,"/api/files/<path>")        
-    ([&files_listing](const std::string& path){
-        return files_listing.get(path);
+        return files_listing.get_sets();
     });    
     
 
