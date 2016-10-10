@@ -13,10 +13,14 @@ find_library(MAGIC_LIB magic)
 find_library(UCHARDET_LIB uchardet)
 find_library(LOG4CXX_LIBS log4cxx)
 
-
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}:/usr/local/lib/pkgconfig/")
 find_package(PkgConfig REQUIRED)
 pkg_search_module(MPV REQUIRED /usr/local/lib/pkgconfig/mpv.pc)
+
+
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+    add_definitions(-DWPLAYER_DEBUG)
+endif(CMAKE_BUILD_TYPE MATCHES Debug)
 
 include_directories(${Boost_INCLUDE_DIRS}) 
 link_directories(${Boost_LIBRARY_DIRS} ${MPV_LIBDIR})
@@ -25,6 +29,7 @@ include_directories(${MPV_INCLUDE_DIRS})
 
 set(SOURCE_FILES src/main.cpp 
               src/mpv_manager.cpp
+              src/mpv_manager_impl.cpp
               src/file_controller.cpp
               src/files_listing_controller.cpp
               src/movie_controller.cpp

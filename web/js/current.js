@@ -14,6 +14,11 @@ wplayerAppControllers.controller('CurrentPlayingController', function($scope,$ht
 			});
 	};
 
+    $scope.playFile = function(file) {
+        $log.log('playing file '+file.name);
+        $http.post('/api/play_movie/'+file.link);
+    };
+
 	$log.log('Loading files');
 	$scope.loadFiles('');
 });

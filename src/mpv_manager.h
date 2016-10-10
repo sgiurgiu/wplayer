@@ -9,7 +9,7 @@ class mpv_manager
 public:
     mpv_manager();
     ~mpv_manager();
-    void show_window();
+    void play(const std::string& path);
     
 private:    
     std::unique_ptr<mpv_manager_impl> impl;

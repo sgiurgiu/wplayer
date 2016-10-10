@@ -41,6 +41,8 @@ crow::response files_listing_controller::get_sets() const
             writer.Uint64(0U);
             writer.String("type",4);
             writer.String("dir");
+            writer.String("parent");
+            writer.Bool(false);
             writer.EndObject();
         }
         catch(const filesystem_error& ex)
@@ -63,10 +65,10 @@ crow::response files_listing_controller::get(const std::string& set,const std::s
     LOG4CXX_DEBUG(logger, "Serving path "<<path<<" from set "<<set);
     utils::unescape(working_set);
     utils::unescape(working_path);
-    if(working_path.length() > 0 && working_path[0]=='/')
-    {
-        working_path = working_path.substr(1);
-    }
+    boost::filesystem::path working_path_folder(working_path);
+    boost::filesystem::path working_folder(working_set);
+    working_folder /= working_path_folder;
+
     LOG4CXX_DEBUG(logger, "After unescape serving path "<<working_path<<" from set "<<working_set);
     std::vector<boost::filesystem::path> dir_entries;    
     try
@@ -74,7 +76,7 @@ crow::response files_listing_controller::get(const std::string& set,const std::s
         if(multimedia_folders.find(working_set) != multimedia_folders.end())
         {
             boost::filesystem::path base_folder(multimedia_folders.at(working_set));
-            base_folder /= working_path;
+            base_folder /= working_path_folder;
             LOG4CXX_DEBUG(logger, "List folder of  "<<base_folder);
             if(exists(base_folder) || is_directory(base_folder))
             {
@@ -87,24 +89,24 @@ crow::response files_listing_controller::get(const std::string& set,const std::s
         std::cout << ex.what() << std::endl;
     }
 
-    std::sort(dir_entries.begin(), dir_entries.end());
+    std::sort(dir_entries.begin(), dir_entries.end(),[](const boost::filesystem::path& p1,const boost::filesystem::path& p2){
+        if(is_directory(p1) && !is_directory(p2)) return true;
+        if(!is_directory(p1) && is_directory(p2)) return false;
+
+        return p1 < p2;
+    });
+
+
     StringBuffer sb;
     PrettyWriter<StringBuffer> writer(sb);
+
+
+
     writer.StartArray();
     writer.StartObject();
     writer.String("name");
     writer.String("..");
-    std::string link = "";
-    if(!working_path.empty())
-    {
-        link = working_set;
-       boost::filesystem::path parent_folder  = boost::filesystem::path(working_path).parent_path();
-       LOG4CXX_DEBUG(logger, "Parent folder of  "<<working_path<<" is "<<parent_folder);
-       if(parent_folder.string() != "/")
-       {
-           link += "/"+parent_folder.string();
-       }
-    }
+    std::string link = working_folder.has_parent_path() ? working_folder.parent_path().string() : "";
     writer.String("link");
     writer.String(link.c_str(),link.length());
 
@@ -112,8 +114,9 @@ crow::response files_listing_controller::get(const std::string& set,const std::s
     writer.Uint64(0U);
     writer.String("type",4);
     writer.String("dir",3);
+    writer.String("parent");
+    writer.Bool(true);
     writer.EndObject();
-
 
     for(const auto& entry: dir_entries)
     {
@@ -126,7 +129,7 @@ crow::response files_listing_controller::get(const std::string& set,const std::s
             writer.StartObject();
             writer.String("name");
             writer.String(name.c_str(),name.length());
-            std::string link = working_set + (working_path.empty()?"": "/" + working_path ) + "/" + name;
+            std::string link = (working_folder / name).string();
             LOG4CXX_DEBUG(logger, "Creating link "<<link<<" from working path "<<working_path<<" and set "<<set<<" and name "<<name);
             writer.String("link");
             writer.String(link.c_str(),link.length());
@@ -135,6 +138,8 @@ crow::response files_listing_controller::get(const std::string& set,const std::s
             writer.Uint64(is_file?file_size(entry):0U);
             writer.String("type",4);
             writer.String(is_file?"file":"dir");
+            writer.String("parent");
+            writer.Bool(false);
             writer.EndObject();
         }
         catch(const filesystem_error& ex)

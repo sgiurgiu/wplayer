@@ -3,6 +3,8 @@
 
 #include <memory>
 #include <mpv/client.h>
+#include <log4cxx/logger.h>
+#include <mutex>
 
 struct mpv_handle_deleter
 {
@@ -17,9 +19,11 @@ class mpv_manager_impl
 public:
   mpv_manager_impl();
   ~mpv_manager_impl();
-  void show_window();
+  void play(const std::string& path);
 private:
   std::unique_ptr< mpv_handle, mpv_handle_deleter > handle;
+  std::mutex mu;
+  static log4cxx::LoggerPtr logger;
 };
 
 #endif // MPV_MANAGER_IMPL_H

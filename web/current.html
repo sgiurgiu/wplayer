@@ -6,16 +6,21 @@
 		<thead>
 			<td width="1%">#</td>
 			<td width="50%">Name</td>
-			<td width="20%">Size</td>
+                        <td width="15%">Size</td>
+                        <td width="15%"></td>
 		</thead>
 		<tbody>
 			<tr ng-repeat="file in files_list">
 				<td>{{$index+1}}</td>
 				<td>
 					<i class="fa {{file.type==='dir'?'fa-folder':'fa-file'}}"></i>
-                                        <a ng-click="loadFiles(file.link)" href="">{{file.name}}</a>
+                                        <a ng-if="file.type==='dir'" ng-click="loadFiles(file.link)" href="">{{file.name}}</a>
+                                        <span ng-if="file.type==='file'">{{file.name}}</span>
 				</td>
-				<td>{{file.type==='file'?file.size:''}}</td>
+                                <td>{{(file.type==='file'?file.size:'')|bytes}}</td>
+                                <td>
+                                        <button ng-if="!file.parent" ng-click="playFile(file)">Play</button>
+                                </td>
 			</tr>
 		</tbody>
 	</table>
