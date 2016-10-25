@@ -1,5 +1,10 @@
 <div class="row">
 	<h4>Files Listing</h4>
+	<p ng-if="cur_dir">Current directory: {{cur_dir}}</p>
+</div>
+<div class="row">
+    <button ng-click="send()">Click</button>
+    <button ng-click="close()">Close</button>
 </div>
 <div class="row">
 	<table class="table table-condensed">

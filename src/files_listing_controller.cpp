@@ -5,15 +5,15 @@
 #include <algorithm>
 
 #include "magic_handler.h"
-#include "rapidjson/prettywriter.h"
+#include "picojson.h"
 #include "crow/crow_all.h"
 
 #include <iostream>
+#include <log4cplus/loggingmacros.h>
 
 using namespace boost::filesystem;
-using namespace rapidjson;
 
-log4cxx::LoggerPtr files_listing_controller::logger(log4cxx::Logger::getLogger("files_listing_controller"));
+log4cplus::Logger files_listing_controller::logger(log4cplus::Logger::getInstance("files_listing_controller"));
 
 files_listing_controller::files_listing_controller(const http_config& config):multimedia_folders(config.multimedia_folders)
 {
@@ -23,38 +23,35 @@ files_listing_controller::~files_listing_controller() = default;
 
 crow::response files_listing_controller::get_sets() const
 {
-    LOG4CXX_DEBUG(logger, "Serving sets");
-    StringBuffer sb;
-    PrettyWriter<StringBuffer> writer(sb);
-    writer.StartArray();
+    LOG4CPLUS_DEBUG(logger, "Serving sets");
+    picojson::value::object json_sets;
+    json_sets.insert({"cur_dir",picojson::value()});
+    picojson::value::array files_list;
     for(const auto& entry: multimedia_folders)
     {
         std::string name = entry.first;
         try
         {
-            writer.StartObject();
-            writer.String("name",4);
-            writer.String(name.c_str(),name.length());
-            writer.String("link",4);
-            writer.String(name.c_str(),name.length());
-            writer.String("size",4);
-            writer.Uint64(0U);
-            writer.String("type",4);
-            writer.String("dir");
-            writer.String("parent");
-            writer.Bool(false);
-            writer.EndObject();
+            picojson::value::object json_set;
+            json_set.insert({"name",picojson::value(name)});
+            json_set.insert({"link",picojson::value(name)});
+            json_set.insert({"size",picojson::value((int64_t)0)});
+            json_set.insert({"type",picojson::value("dir")});            
+            json_set.insert({"parent",picojson::value(false)});
+            files_list.push_back(picojson::value(json_set));
         }
         catch(const filesystem_error& ex)
         {
             std::cout << ex.what() << std::endl;
         }
     }
-    writer.EndArray();
+    json_sets.insert({"files",picojson::value(files_list)});
+    
     crow::response rsp;
     rsp.code = 200;
     rsp.set_header("Content-Type","application/json; charset=UTF-8");
-    rsp.write(sb.GetString());
+    picojson::value sets_value(json_sets);
+    rsp.write(sets_value.serialize());
     return rsp;    
 }
 
@@ -62,14 +59,14 @@ crow::response files_listing_controller::get(const std::string& set,const std::s
 {
     std::string working_set = set;
     std::string working_path = path;
-    LOG4CXX_DEBUG(logger, "Serving path "<<path<<" from set "<<set);
+    LOG4CPLUS_DEBUG(logger, "Serving path "<<path<<" from set "<<set);
     utils::unescape(working_set);
     utils::unescape(working_path);
     boost::filesystem::path working_path_folder(working_path);
     boost::filesystem::path working_folder(working_set);
     working_folder /= working_path_folder;
 
-    LOG4CXX_DEBUG(logger, "After unescape serving path "<<working_path<<" from set "<<working_set);
+    LOG4CPLUS_DEBUG(logger, "After unescape serving path "<<working_path<<" from set "<<working_set);
     std::vector<boost::filesystem::path> dir_entries;    
     try
     {
@@ -77,7 +74,7 @@ crow::response files_listing_controller::get(const std::string& set,const std::s
         {
             boost::filesystem::path base_folder(multimedia_folders.at(working_set));
             base_folder /= working_path_folder;
-            LOG4CXX_DEBUG(logger, "List folder of  "<<base_folder);
+            LOG4CPLUS_DEBUG(logger, "List folder of  "<<base_folder);
             if(exists(base_folder) || is_directory(base_folder))
             {
                 copy(directory_iterator(base_folder), directory_iterator(),std::back_inserter(dir_entries));
@@ -96,28 +93,19 @@ crow::response files_listing_controller::get(const std::string& set,const std::s
         return p1 < p2;
     });
 
+    picojson::value::object json_files;
+    json_files.insert({"cur_dir",picojson::value(working_folder.string())});
+    picojson::value::array files_list;
 
-    StringBuffer sb;
-    PrettyWriter<StringBuffer> writer(sb);
-
-
-
-    writer.StartArray();
-    writer.StartObject();
-    writer.String("name");
-    writer.String("..");
     std::string link = working_folder.has_parent_path() ? working_folder.parent_path().string() : "";
-    writer.String("link");
-    writer.String(link.c_str(),link.length());
-
-    writer.String("size",4);
-    writer.Uint64(0U);
-    writer.String("type",4);
-    writer.String("dir",3);
-    writer.String("parent");
-    writer.Bool(true);
-    writer.EndObject();
-
+    picojson::value::object json_parent_object;
+    json_parent_object.insert({"name",picojson::value("..")});
+    json_parent_object.insert({"link",picojson::value(link)});
+    json_parent_object.insert({"size",picojson::value((int64_t)0)});
+    json_parent_object.insert({"type",picojson::value("dir")});            
+    json_parent_object.insert({"parent",picojson::value(true)});
+    files_list.push_back(picojson::value(json_parent_object));
+        
     for(const auto& entry: dir_entries)
     {
         try
@@ -126,31 +114,25 @@ crow::response files_listing_controller::get(const std::string& set,const std::s
             if(name.length() > 0 && name[0]=='.') continue;
             if(is_other(entry)) continue;
             bool is_file = is_regular_file(entry);
-            writer.StartObject();
-            writer.String("name");
-            writer.String(name.c_str(),name.length());
             std::string link = (working_folder / name).string();
-            LOG4CXX_DEBUG(logger, "Creating link "<<link<<" from working path "<<working_path<<" and set "<<set<<" and name "<<name);
-            writer.String("link");
-            writer.String(link.c_str(),link.length());
-
-            writer.String("size",4);
-            writer.Uint64(is_file?file_size(entry):0U);
-            writer.String("type",4);
-            writer.String(is_file?"file":"dir");
-            writer.String("parent");
-            writer.Bool(false);
-            writer.EndObject();
+            LOG4CPLUS_DEBUG(logger, "Creating link "<<link<<" from working path "<<working_path<<" and set "<<set<<" and name "<<name);
+            picojson::value::object json_object;
+            json_object.insert({"name",picojson::value(name)});
+            json_object.insert({"link",picojson::value(link)});
+            json_object.insert({"size",picojson::value((int64_t)(is_file?file_size(entry):0))});
+            json_object.insert({"type",picojson::value(is_file?"file":"dir")});            
+            json_object.insert({"parent",picojson::value(false)});
+            files_list.push_back(picojson::value(json_object));
         }
         catch(const filesystem_error& ex)
         {
             std::cout << ex.what() << std::endl;
         }
     }
-    writer.EndArray();
+    json_files.insert({"files",picojson::value(files_list)});
     crow::response rsp;
     rsp.code = 200;
     rsp.set_header("Content-Type","application/json; charset=UTF-8");
-    rsp.write(sb.GetString());
+    rsp.write(picojson::value(json_files).serialize());
     return rsp;
 }

@@ -4,7 +4,8 @@
 #include "http_config.h"
 #include "mpv_manager.h"
 #include <string>
-#include <log4cxx/logger.h>
+#include <log4cplus/logger.h>
+
 
 namespace crow {
     struct response;
@@ -18,7 +19,7 @@ public:
 private:
     folders multimedia_folders;
     mpv_manager mpv;
-    static log4cxx::LoggerPtr logger;
+    static log4cplus::Logger logger;
 };
 
 #endif // MOVIE_CONTROLLER_H

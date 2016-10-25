@@ -11,7 +11,7 @@ find_package(Boost 1.58 REQUIRED program_options filesystem system thread log lo
 find_package(OpenSSL REQUIRED)
 find_library(MAGIC_LIB magic)
 find_library(UCHARDET_LIB uchardet)
-find_library(LOG4CXX_LIBS log4cxx)
+find_library(LOG4CPLUS_LIBS log4cplus)
 
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}:/usr/local/lib/pkgconfig/")
 find_package(PkgConfig REQUIRED)
@@ -29,20 +29,20 @@ include_directories(${MPV_INCLUDE_DIRS})
 
 set(SOURCE_FILES src/main.cpp 
               src/mpv_manager.cpp
-              src/mpv_manager_impl.cpp
               src/file_controller.cpp
               src/files_listing_controller.cpp
               src/movie_controller.cpp
               src/http_config.cpp
               src/magic_handler.cpp
               src/not_found_exception.cpp
-              src/utils.cpp)
+              src/utils.cpp
+              src/player_service.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 #message("${Boost_LIBRARIES}")
 
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${LOG4CXX_LIBS})
+target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${LOG4CPLUS_LIBS})
 target_link_libraries(${PROJECT_NAME} ${MPV_STATIC_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${MAGIC_LIB})

@@ -2,8 +2,20 @@
 #define MPV_MANAGER_H
 
 #include <memory>
+#include <mpv/client.h>
+#include <log4cplus/logger.h>
 
-class mpv_manager_impl;
+#include <mutex>
+
+
+struct mpv_handle_deleter
+{
+  void operator()(mpv_handle* handle)
+  {
+     mpv_terminate_destroy(handle);
+  }
+};
+
 class mpv_manager
 {
 public:
@@ -12,7 +24,9 @@ public:
     void play(const std::string& path);
     
 private:    
-    std::unique_ptr<mpv_manager_impl> impl;
+  std::unique_ptr< mpv_handle, mpv_handle_deleter > handle;
+  std::mutex mu;
+  log4cplus::Logger logger;
 };
 
 #endif // MPV_MANAGER_H

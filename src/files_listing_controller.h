@@ -4,7 +4,7 @@
 #include "http_config.h"
 #include <memory>
 #include <string>
-#include <log4cxx/logger.h>
+#include <log4cplus/logger.h>
 
 namespace crow {
     struct response;
@@ -21,7 +21,7 @@ public:
 private:
   folders multimedia_folders;
   std::unique_ptr<magic_handler> magic;
-  static log4cxx::LoggerPtr logger;
+  static log4cplus::Logger logger;
 };
 
 #endif // FILES_LISTING_CONTROLLER_H
