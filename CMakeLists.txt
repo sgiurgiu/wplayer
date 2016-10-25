@@ -31,7 +31,6 @@ set(SOURCE_FILES src/main.cpp
               src/mpv_manager.cpp
               src/file_controller.cpp
               src/files_listing_controller.cpp
-              src/movie_controller.cpp
               src/http_config.cpp
               src/magic_handler.cpp
               src/not_found_exception.cpp
@@ -40,7 +39,7 @@ set(SOURCE_FILES src/main.cpp
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
-#message("${Boost_LIBRARIES}")
+message("${Boost_LIBRARIES}")
 
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${LOG4CPLUS_LIBS})
 target_link_libraries(${PROJECT_NAME} ${MPV_STATIC_LIBRARIES})

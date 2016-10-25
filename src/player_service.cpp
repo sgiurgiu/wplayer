@@ -3,6 +3,7 @@
 #include "picojson.h"
 
 #include <log4cplus/loggingmacros.h>
+#include <boost/filesystem.hpp>
 
 using ConnectionPtr = std::shared_ptr<player_service::WsServer::Connection>;
 using MessagePtr = std::shared_ptr<player_service::WsServer::Message>;
@@ -10,10 +11,11 @@ using MessagePtr = std::shared_ptr<player_service::WsServer::Message>;
 player_service::player_service(const http_config &config):mpv(new mpv_manager()),wsServer(9090,2),multimedia_folders(config.multimedia_folders),
                                                     logger(log4cplus::Logger::getInstance("player_service"))
 {
-    handlers_map["play"]=[this](const picojson::value& val){
-        play_command(val);
-    };    
+    using namespace std::placeholders;   
+    handlers_map["play"]=std::bind(&player_service::play_command,this,_1);
+    handlers_map["stop"]=std::bind(&player_service::stop_command,this,_1);        
 }
+player_service::~player_service() = default;
 
 void player_service::stop()
 {
@@ -89,5 +91,37 @@ void player_service::handle_message(const std::string& msg)
 
 void player_service::play_command(const picojson::value& val)
 {
+    auto link_obj = val.get("link");
+    if(link_obj.is<picojson::null>())
+    {
+        LOG4CPLUS_ERROR(logger, val<<" has no link");                  
+        return;        
+    }
+    const std::string& link = link_obj.get<std::string>();    
+    boost::filesystem::path link_path(link);
+    auto path_it = link_path.begin();
+    boost::filesystem::path set_path = *path_it;
+    ++path_it;
+    boost::filesystem::path path_to_file;
+    for(;path_it != link_path.end();++path_it)
+    {
+        path_to_file /= *path_it;
+    }
     
+    if(multimedia_folders.find(set_path.string()) != multimedia_folders.end())
+    {        
+        boost::filesystem::path file_to_play(multimedia_folders.at(set_path.string()));
+        file_to_play /= path_to_file;
+        LOG4CPLUS_DEBUG(logger, "Playing "<<file_to_play);
+        if(exists(file_to_play))
+        {
+            mpv->play(file_to_play.string());
+        }
+        
+    }
+}
+
+void player_service::stop_command(const picojson::value&)
+{
+    mpv->stop();
 }

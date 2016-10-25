@@ -15,16 +15,19 @@ namespace picojson
     class value;
 }    
 class mpv_manager;
+
 class player_service
 {
 public:
     using WsServer = SimpleWeb::SocketServer<SimpleWeb::WS>;    
     player_service(const http_config& config);
+    ~player_service();
     void start();
     void stop();
 private:
     void handle_message(const std::string& msg);
     void play_command(const picojson::value& val);
+    void stop_command(const picojson::value&);
 private:
     std::mutex mu;
     std::unique_ptr<mpv_manager> mpv;

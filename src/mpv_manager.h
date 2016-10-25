@@ -22,7 +22,7 @@ public:
     mpv_manager();
     ~mpv_manager();
     void play(const std::string& path);
-    
+    void stop();
 private:    
   std::unique_ptr< mpv_handle, mpv_handle_deleter > handle;
   std::mutex mu;

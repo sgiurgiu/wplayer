@@ -17,7 +17,12 @@ wplayerAppControllers.controller('CurrentPlayingController', function($scope,$ht
 
     $scope.playFile = function(file) {
         $log.log('playing file '+file.name);
-        $http.post('/api/play_movie/'+file.link);
+        $scope.ws.send(JSON.stringify({name:'play',link:file.link}));      
+        //$http.post('/api/play_movie/'+file.link);
+    };
+    $scope.stopPlay = function() {
+        
+        $scope.ws.send(JSON.stringify({name:'stop'}));      
     };
     
 

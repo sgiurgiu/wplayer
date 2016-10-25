@@ -2,7 +2,6 @@
 
 #include "file_controller.h"
 #include "files_listing_controller.h"
-#include "movie_controller.h"
 #include "crow/crow_all.h"
 #include "player_service.h"
 
@@ -29,7 +28,7 @@ int main(int /*argc*/, char** /*argv*/)
 
     file_controller files(config.files_folder);
     files_listing_controller files_listing(config);
-    movie_controller movies(config);
+
     if(false)
     {
         daemon(0,0);
@@ -57,11 +56,6 @@ int main(int /*argc*/, char** /*argv*/)
         return files.get_file_contents("index.html");
     });
 
-    CROW_ROUTE(app,"/api/play_movie/<string>/<path>")
-    .methods("POST"_method)
-    ([&movies](const std::string& set,const std::string& path) {
-        return movies.play(set,path);
-    });
 
     CROW_ROUTE(app,"/<path>")
     .methods("GET"_method)
