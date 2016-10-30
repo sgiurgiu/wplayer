@@ -1,46 +1,11 @@
-wplayerAppControllers.controller('CurrentPlayingController', function($scope,$http,$log) {
-	$scope.files_list = [];
-
-	$scope.loadFiles = function(path) {
-                var url = '/api/files';
-                if(path !== '')  url+= '/'+path;
-		$http.get(url)
-			.success(function(data){
-                                $scope.cur_dir = data.cur_dir;
-				$scope.files_list = data.files;
-				$log.log('got files '+data);
-			})
-			.error(function(response){
-
-			});
-	};
-
-    $scope.playFile = function(file) {
-        $log.log('playing file '+file.name);
-        $scope.ws.send(JSON.stringify({name:'play',link:file.link}));      
-        //$http.post('/api/play_movie/'+file.link);
-    };
-    $scope.stopPlay = function() {
-        
+wplayerAppControllers.controller('CurrentPlayingController', function($scope,$log) {
+	
+    
+    $scope.stopPlay = function() {        
         $scope.ws.send(JSON.stringify({name:'stop'}));      
     };
     
-
-    $scope.ws=new WebSocket("ws://localhost:9090/player/");
-    $scope.ws.onmessage=function(evt) {
-        console.log("received:"+evt.data);        
-    };
+    $log.log("$scope.current_movie:"+$scope.current_movie);    
+      
     
-    $scope.ws.onopen=function(evt){
-        console.log("openend connection");
-    };
-    $scope.send = function() {
-        $scope.ws.send("Hello");        
-    };
-    $scope.close = function() {
-        $scope.ws.close();
-    };
-
-        $log.log('Loading files');
-	$scope.loadFiles('');
 });

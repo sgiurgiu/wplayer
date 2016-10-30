@@ -1,6 +1,7 @@
 #ifndef MPV_MANAGER_H
 #define MPV_MANAGER_H
 
+#include <string>
 #include <memory>
 #include <mpv/client.h>
 #include <log4cplus/logger.h>
@@ -14,6 +15,16 @@ struct mpv_handle_deleter
   }
 };
 
+struct mpv_status
+{
+    std::string loaded_filename = "";
+    uint64_t file_size = 0;
+    int percent_complete = 0; //0-100
+    double total_duration = 0;
+    double time_position = 0;
+    int64_t audio_volume = 0;
+    bool idle = true;
+};
 class mpv_manager
 {
 public:
@@ -22,6 +33,7 @@ public:
     void play(const std::string& path);
     void stop();
     void quit();
+    mpv_status get_mpv_status() const;
 private:
     std::string create_metadata_object(mpv_node* metadata);
     picojson::value create_node_json_value(const mpv_node& node);

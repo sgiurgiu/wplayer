@@ -144,3 +144,19 @@ void mpv_manager::quit()
 {
     mpv_command_string(handle.get(),"quit");    
 }
+
+mpv_status mpv_manager::get_mpv_status() const
+{
+    mpv_status status;
+    mpv_get_property(handle.get(),"idle-active",MPV_FORMAT_FLAG,&status.idle);
+    if(status.idle) return status;
+    char* filename = mpv_get_property_string(handle.get(),"filename");
+    if(filename) status.loaded_filename = filename;    
+    mpv_get_property(handle.get(),"file-size",MPV_FORMAT_INT64,&status.file_size);
+    mpv_get_property(handle.get(),"duration",MPV_FORMAT_DOUBLE,&status.total_duration);
+    mpv_get_property(handle.get(),"percent-pos",MPV_FORMAT_INT64,&status.percent_complete);
+    mpv_get_property(handle.get(),"time-pos",MPV_FORMAT_DOUBLE,&status.time_position);
+    mpv_get_property(handle.get(),"ao-volume",MPV_FORMAT_INT64,&status.audio_volume);        
+    
+    return status;
+}

@@ -4,62 +4,90 @@
 
 #include <log4cplus/loggingmacros.h>
 #include <boost/filesystem.hpp>
+#include <chrono>
 
-using ConnectionPtr = std::shared_ptr<player_service::WsServer::Connection>;
-using MessagePtr = std::shared_ptr<player_service::WsServer::Message>;
-
-player_service::player_service(const http_config &config):mpv(new mpv_manager()),wsServer(9090,2),multimedia_folders(config.multimedia_folders),
+player_service::player_service(const http_config &config):done_polling(false),mpv(new mpv_manager()),wsServer(9090,2),multimedia_folders(config.multimedia_folders),
                                                     logger(log4cplus::Logger::getInstance("player_service"))
 {
     using namespace std::placeholders;   
     handlers_map["play"]=std::bind(&player_service::play_command,this,_1);
-    handlers_map["stop"]=std::bind(&player_service::stop_command,this,_1);        
+    handlers_map["stop"]=std::bind(&player_service::stop_command,this,_1);      
 }
 player_service::~player_service() = default;
 
 void player_service::stop()
 {
-    std::lock_guard<std::mutex> lock(mu);
     wsServer.stop();
     mpv->quit();
+    done_polling = true;
+    mpv_status_polling_thread.join();
 }
 
 void player_service::start()
 {
-    {
-        std::lock_guard<std::mutex> lock(mu);
-        auto& endpoint = wsServer.endpoint["^/player/?$"];    
-        endpoint.onmessage = [this](ConnectionPtr connection, MessagePtr message) {
-            auto message_str = message->string();            
-            LOG4CPLUS_DEBUG(logger, "Server: Message received: \"" << message_str << "\" from " << (size_t)connection.get());  
-            handle_message(message_str);            
-                    
-            /*auto send_stream=std::make_shared<WsServer::SendStream>();
-            *send_stream << message_str;
-            wsServer.send(connection, send_stream, [](const boost::system::error_code& ec){
-                if(ec) 
-                {
-                    log4cplus::Logger logger(log4cplus::Logger::getInstance("player_service_send"));
-                    LOG4CPLUS_DEBUG(logger, "Server: Error sending message. " <<
-                    //See http://www.boost.org/doc/libs/1_55_0/doc/html/boost_asio/reference.html, Error Codes for error code meanings
-                            "Error: " << ec << ", error message: " << ec.message());
-                }
-            });        */
-        };
-        
-        endpoint.onopen = [this](ConnectionPtr connection){
-            LOG4CPLUS_DEBUG(logger, "Opened connection ");                  
-            
-            auto send_stream=std::make_shared<WsServer::SendStream>();
-            *send_stream << "got your connection";
-            wsServer.send(connection, send_stream, [](const boost::system::error_code&){});        
-            
-        };
-        endpoint.onclose = [this](ConnectionPtr connection,int status, const std::string& reason){
-            LOG4CPLUS_DEBUG(logger, "Closed connection "<<status<<", reason: "<<reason);                  
-        }; 
-    }
+    setup_polling_thread();
+    setup_ws_server();
     wsServer.start();
+}
+
+void player_service::setup_polling_thread()
+{
+    mpv_status_polling_thread = std::thread([this](){
+        while(!done_polling)
+        {
+            using namespace std::chrono_literals;
+            std::this_thread::sleep_for(2s);
+            for(auto con: wsServer.get_connections())
+            {
+                report_status(con);
+            }
+        }
+    });
+}
+
+void player_service::setup_ws_server()
+{
+    auto& endpoint = wsServer.endpoint["^/player/?$"];    
+    endpoint.onmessage = [this](ConnectionPtr connection, MessagePtr message) {
+        auto message_str = message->string();            
+        LOG4CPLUS_DEBUG(logger, "Server: Message received: \"" << message_str << "\" from " << (size_t)connection.get());  
+        handle_message(message_str);            
+                
+        /*auto send_stream=std::make_shared<WsServer::SendStream>();
+        *send_stream << message_str;
+        wsServer.send(connection, send_stream, [](const boost::system::error_code& ec){
+            if(ec) 
+            {
+                log4cplus::Logger logger(log4cplus::Logger::getInstance("player_service_send"));
+                LOG4CPLUS_DEBUG(logger, "Server: Error sending message. " <<
+                //See http://www.boost.org/doc/libs/1_55_0/doc/html/boost_asio/reference.html, Error Codes for error code meanings
+                        "Error: " << ec << ", error message: " << ec.message());
+            }
+        });        */
+    };
+    
+    endpoint.onopen = [this](ConnectionPtr connection){
+        LOG4CPLUS_DEBUG(logger, "Opened connection ");                  
+        report_status(connection);
+    };
+    endpoint.onclose = [this](ConnectionPtr /*connection*/,int status, const std::string& reason){
+        LOG4CPLUS_DEBUG(logger, "Closed connection "<<status<<", reason: "<<reason);                  
+    }; 
+}
+
+void player_service::report_status(ConnectionPtr connection)
+{
+    mpv_status status = mpv->get_mpv_status();
+    picojson::object status_obj;
+    status_obj.insert({"file_size",picojson::value((int64_t)status.file_size)});
+    status_obj.insert({"idle",picojson::value(status.idle)});
+    status_obj.insert({"file_name",picojson::value(status.loaded_filename)});
+    status_obj.insert({"percent_complete",picojson::value((int64_t)status.percent_complete)});
+    status_obj.insert({"time_position",picojson::value(status.time_position)});
+    status_obj.insert({"total_duration",picojson::value(status.total_duration)});
+    auto send_stream=std::make_shared<WsServer::SendStream>();
+    *send_stream << picojson::value(status_obj).serialize();
+    wsServer.send(connection, send_stream, [](const boost::system::error_code&){});            
 }
 
 void player_service::handle_message(const std::string& msg)

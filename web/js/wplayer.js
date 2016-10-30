@@ -7,7 +7,7 @@ wplayerApp.config (['$routeProvider',function($routeProvider){
                                 controllerAs: 'current'
                         }).when('/movies',{
                                 templateUrl : '/movies.html',
-                                controller: 'MoviesListController',
+                                controller: 'MoviesListingController',
                                 controllerAs: 'movielist'
                         }).otherwise({ redirectTo: '/current' });
                 }
@@ -27,9 +27,45 @@ wplayerApp.filter('bytes', function() {
         return (bytes / Math.pow(1024, Math.floor(number))).toFixed(precision) +  ' ' + units[number];
     }
 });
+wplayerApp.filter('duration', function() {
+    return function(seconds) {
+        if (isNaN(parseInt(seconds)) || !isFinite(seconds)) return '';
+        var mom = moment.utc(seconds*1000);
+        return mom.format('HH:mm:ss');
+    }
+});
+
+wplayerApp.run(function($rootScope,$location,$log) {
+    $rootScope.ws=new WebSocket("ws://"+$location.host()+":9090/player/");
+    $rootScope.playFile = function(file) {
+        $log.log('playing file '+file.name);
+        $rootScope.ws.send(JSON.stringify({name:'play',link:file.link}));      
+    };
+    $rootScope.current_movie = {};
+    $rootScope.ws.onmessage=function(evt) {
+        $log.log("received:"+evt.data);        
+        $rootScope.$apply(function(){
+            $rootScope.current_movie = JSON.parse(evt.data);
+            $log.log("$scope.current_movie:"+$rootScope.current_movie);
+            $log.log("$scope.current_movie:"+$rootScope.current_movie.file_name);                            
+        });
+    };
+      
+    $rootScope.ws.onopen=function(evt){
+        console.log("openend connection");
+    };
+    $rootScope.send = function() {
+        $scope.ws.send("Hello");        
+    };
+    $rootScope.close = function() {
+        $scope.ws.close();
+    };            
+});
 
 var wplayerAppControllers = angular.module('wplayerAppControllers',[]);
 
-wplayerAppControllers.controller('WPlayerController',function($scope,$route){
+wplayerAppControllers.controller('WPlayerController',function($scope,$route,$location,$log){
 	$scope.$route = $route;	
+    
+
 });
