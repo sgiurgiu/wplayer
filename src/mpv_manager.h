@@ -4,9 +4,7 @@
 #include <memory>
 #include <mpv/client.h>
 #include <log4cplus/logger.h>
-
-#include <mutex>
-
+#include "picojson.h"
 
 struct mpv_handle_deleter
 {
@@ -23,9 +21,14 @@ public:
     ~mpv_manager();
     void play(const std::string& path);
     void stop();
+    void quit();
+private:
+    std::string create_metadata_object(mpv_node* metadata);
+    picojson::value create_node_json_value(const mpv_node& node);
+    picojson::array create_node_json_array(const mpv_node& node);
+    picojson::object create_node_json_map(const mpv_node& node);
 private:    
   std::unique_ptr< mpv_handle, mpv_handle_deleter > handle;
-  std::mutex mu;
   log4cplus::Logger logger;
 };
 

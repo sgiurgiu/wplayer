@@ -21,6 +21,7 @@ void player_service::stop()
 {
     std::lock_guard<std::mutex> lock(mu);
     wsServer.stop();
+    mpv->quit();
 }
 
 void player_service::start()
@@ -85,7 +86,7 @@ void player_service::handle_message(const std::string& msg)
     else
     {
         //execute it
-        it->second(msg_val);
+        it->second(msg_val);        
     }
 }
 
@@ -116,12 +117,12 @@ void player_service::play_command(const picojson::value& val)
         if(exists(file_to_play))
         {
             mpv->play(file_to_play.string());
-        }
-        
+        }        
     }
 }
 
 void player_service::stop_command(const picojson::value&)
 {
+    LOG4CPLUS_DEBUG(logger, " Calling STOP");         
     mpv->stop();
 }
