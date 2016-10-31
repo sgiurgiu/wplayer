@@ -11,7 +11,10 @@ player_service::player_service(const http_config &config):done_polling(false),mp
 {
     using namespace std::placeholders;   
     handlers_map["play"]=std::bind(&player_service::play_command,this,_1);
-    handlers_map["stop"]=std::bind(&player_service::stop_command,this,_1);      
+    handlers_map["stop"]=std::bind(&player_service::stop_command,this,_1);
+    handlers_map["pause"]=std::bind(&player_service::pause_command,this,_1);      
+    handlers_map["resume"]=std::bind(&player_service::resume_command,this,_1);
+    handlers_map["volume"]=std::bind(&player_service::volume_command,this,_1);      
 }
 player_service::~player_service() = default;
 
@@ -85,6 +88,9 @@ void player_service::report_status(ConnectionPtr connection)
     status_obj.insert({"percent_complete",picojson::value((int64_t)status.percent_complete)});
     status_obj.insert({"time_position",picojson::value(status.time_position)});
     status_obj.insert({"total_duration",picojson::value(status.total_duration)});
+    status_obj.insert({"volume",picojson::value(status.audio_volume)});
+    status_obj.insert({"paused",picojson::value(status.paused)});
+    status_obj.insert({"seekable",picojson::value(status.seekable)});
     auto send_stream=std::make_shared<WsServer::SendStream>();
     *send_stream << picojson::value(status_obj).serialize();
     wsServer.send(connection, send_stream, [](const boost::system::error_code&){});            
@@ -116,6 +122,20 @@ void player_service::handle_message(const std::string& msg)
         //execute it
         it->second(msg_val);        
     }
+}
+void player_service::volume_command(const picojson::value& val)
+{
+    auto vol_obj = val.get("value");
+    double vol = 0;
+    if(vol_obj.is<double>())
+    {
+        vol = vol_obj.get<double>();
+    }
+    else
+    {
+        vol = std::stod(vol_obj.get<std::string>());
+    }
+    mpv->set_volume(vol);
 }
 
 void player_service::play_command(const picojson::value& val)
@@ -153,4 +173,12 @@ void player_service::stop_command(const picojson::value&)
 {
     LOG4CPLUS_DEBUG(logger, " Calling STOP");         
     mpv->stop();
+}
+void player_service::pause_command(const picojson::value&)
+{
+    mpv->pause();
+}
+void player_service::resume_command(const picojson::value&)
+{
+    mpv->resume();
 }

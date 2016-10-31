@@ -22,8 +22,10 @@ struct mpv_status
     int percent_complete = 0; //0-100
     double total_duration = 0;
     double time_position = 0;
-    int64_t audio_volume = 0;
+    double audio_volume = 0;
     bool idle = true;
+    bool paused = false;
+    bool seekable = false;
 };
 class mpv_manager
 {
@@ -33,6 +35,9 @@ public:
     void play(const std::string& path);
     void stop();
     void quit();
+    void pause();
+    void resume();
+    void set_volume(double vol);
     mpv_status get_mpv_status() const;
 private:
     std::string create_metadata_object(mpv_node* metadata);

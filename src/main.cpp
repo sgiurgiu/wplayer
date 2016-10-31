@@ -56,6 +56,12 @@ int main(int /*argc*/, char** /*argv*/)
         return files.get_file_contents("index.html");
     });
 
+    CROW_ROUTE(app,"/movies")
+    .methods("GET"_method)
+    ([&files]() {
+        return files.get_file_contents("index.html");
+    });
+
 
     CROW_ROUTE(app,"/<path>")
     .methods("GET"_method)

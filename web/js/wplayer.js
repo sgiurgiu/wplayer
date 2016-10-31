@@ -54,12 +54,7 @@ wplayerApp.run(function($rootScope,$location,$log) {
     $rootScope.ws.onopen=function(evt){
         console.log("openend connection");
     };
-    $rootScope.send = function() {
-        $scope.ws.send("Hello");        
-    };
-    $rootScope.close = function() {
-        $scope.ws.close();
-    };            
+    
 });
 
 var wplayerAppControllers = angular.module('wplayerAppControllers',[]);

@@ -16,6 +16,7 @@ mpv_manager::mpv_manager()
     mpv_set_option_string(handle.get(), "ao", "pulse,alsa");
     mpv_set_option_string(handle.get(), "hwdec", "auto");
     mpv_set_option_string(handle.get(), "terminal", "yes");
+    //mpv_set_option_string(handle.get(),"no-input-default-bindings","");
     //mpv_set_option_string(handle.get(), "msg-level", "all=v");
     //mpv_set_option_string(handle.get(), "fullscreen","");
     //mpv_set_option_string(handle.get(), "ontop","");
@@ -144,6 +145,25 @@ void mpv_manager::quit()
 {
     mpv_command_string(handle.get(),"quit");    
 }
+void mpv_manager::pause()
+{
+    int val = 1;
+    mpv_set_property(handle.get(),"pause",MPV_FORMAT_FLAG,&val);
+}
+void mpv_manager::resume()
+{
+    int val = 0;
+    mpv_set_property(handle.get(),"pause",MPV_FORMAT_FLAG,&val);
+}
+void mpv_manager::set_volume(double vol)
+{
+    int res = mpv_set_property(handle.get(),"volume",MPV_FORMAT_DOUBLE,&vol);
+    if(res)
+    {
+        const char* ss = mpv_error_string(res);
+        LOG4CPLUS_ERROR(logger, "Cannot set volume : "<< ss);
+    }
+}
 
 mpv_status mpv_manager::get_mpv_status() const
 {
@@ -156,7 +176,10 @@ mpv_status mpv_manager::get_mpv_status() const
     mpv_get_property(handle.get(),"duration",MPV_FORMAT_DOUBLE,&status.total_duration);
     mpv_get_property(handle.get(),"percent-pos",MPV_FORMAT_INT64,&status.percent_complete);
     mpv_get_property(handle.get(),"time-pos",MPV_FORMAT_DOUBLE,&status.time_position);
-    mpv_get_property(handle.get(),"ao-volume",MPV_FORMAT_INT64,&status.audio_volume);        
-    
+    mpv_get_property(handle.get(),"volume",MPV_FORMAT_DOUBLE,&status.audio_volume);   
+    mpv_get_property(handle.get(),"seekable",MPV_FORMAT_FLAG,&status.seekable);
+    mpv_get_property(handle.get(),"pause",MPV_FORMAT_FLAG,&status.paused);
+    //seekable
+    //pause
     return status;
 }

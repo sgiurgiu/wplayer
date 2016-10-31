@@ -13,7 +13,17 @@
     
 </div>
 <div class="row" ng-if="!current_movie.idle">
-    <div class="col-lg-1">
-        <button ng-click="stopPlay()">Stop</button>
+    <div class="col-lg-5">
+        <button class="btn btn-default btn-xs" ng-click="pauseResumePlay()"><i ng-class="current_movie.paused?'fa fa-play':'fa fa-pause'" aria-hidden="true"></i></button>
+        <button class="btn btn-default btn-xs" ng-click="stopPlay()"><i class="fa fa-stop" aria-hidden="true"></i></button>
     </div>
+
+</div>
+
+<div class="row" ng-if="!current_movie.idle">
+    <div class="col-lg-5">
+        <input type="text" ng-model="props.vol_value" ng-trim="true">
+        <button class="btn btn-default btn-xs" ng-click="setVolume()">Set</button>
+    </div>
+
 </div>

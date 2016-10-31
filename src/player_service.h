@@ -32,7 +32,9 @@ private:
     void handle_message(const std::string& msg);
     void play_command(const picojson::value& val);
     void stop_command(const picojson::value&);
-    
+    void pause_command(const picojson::value&);
+    void resume_command(const picojson::value&);
+    void volume_command(const picojson::value& val);
     void setup_ws_server();
     void setup_polling_thread();
     void report_status(ConnectionPtr connection);
