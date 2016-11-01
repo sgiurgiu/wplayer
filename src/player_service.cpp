@@ -15,6 +15,13 @@ player_service::player_service(const http_config &config):done_polling(false),mp
     handlers_map["pause"]=std::bind(&player_service::pause_command,this,_1);      
     handlers_map["resume"]=std::bind(&player_service::resume_command,this,_1);
     handlers_map["volume"]=std::bind(&player_service::volume_command,this,_1);      
+    handlers_map["forward"]=std::bind(&player_service::forward_command,this,_1);
+    handlers_map["backward"]=std::bind(&player_service::backward_command,this,_1);
+    handlers_map["fast-forward"]=std::bind(&player_service::fast_forward_command,this,_1);
+    handlers_map["fast-backward"]=std::bind(&player_service::fast_backward_command,this,_1);
+    handlers_map["seek-percent"]=std::bind(&player_service::seek_percent_command,this,_1);
+    handlers_map["youtube"]=std::bind(&player_service::play_youtube_command,this,_1);  
+    
 }
 player_service::~player_service() = default;
 
@@ -181,4 +188,39 @@ void player_service::pause_command(const picojson::value&)
 void player_service::resume_command(const picojson::value&)
 {
     mpv->resume();
+}
+void player_service::forward_command(const picojson::value&)
+{
+    mpv->forward();
+}
+void player_service::backward_command(const picojson::value&)
+{
+    mpv->backward();
+}
+void player_service::fast_backward_command(const picojson::value&)
+{
+    mpv->fast_backward();
+}
+void player_service::fast_forward_command(const picojson::value&)
+{
+    mpv->fast_forward();
+}
+void player_service::seek_percent_command(const picojson::value& val)
+{
+    auto percent_obj = val.get("value");
+    double percent = -1;
+    if(percent_obj.is<double>())
+    {
+        percent = percent_obj.get<double>();
+    }
+    else
+    {
+        percent = std::stod(percent_obj.get<std::string>());
+    }    
+    mpv->seek_percent(percent);
+}
+void player_service::play_youtube_command(const picojson::value& val)
+{
+    auto youtube_id_obj = val.get("value");
+    mpv->play_youtube(youtube_id_obj.get<std::string>());
 }

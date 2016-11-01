@@ -11,11 +11,13 @@ mpv_manager::mpv_manager()
     const char* env = "DISPLAY=:0";
     putenv((char*)env);
     mpv_set_option_string(handle.get(), "input-default-bindings", "yes");
-    mpv_set_option_string(handle.get(), "input-vo-keyboard", "yes");
-    mpv_set_option_string(handle.get(), "vo", "opengl-hq,opengl,vdpau,xv,");
+    mpv_set_option_string(handle.get(), "input-vo-keyboard", "yes");    
+    mpv_set_option_string(handle.get(), "profile", "opengl-hq");
+    mpv_set_option_string(handle.get(), "vo", "opengl,vdpau,xv,");
     mpv_set_option_string(handle.get(), "ao", "pulse,alsa");
     mpv_set_option_string(handle.get(), "hwdec", "auto");
-    mpv_set_option_string(handle.get(), "terminal", "yes");
+    mpv_set_option_string(handle.get(), "terminal", "yes");    
+    mpv_set_option_string(handle.get(), "ytdl","");
     //mpv_set_option_string(handle.get(),"no-input-default-bindings","");
     //mpv_set_option_string(handle.get(), "msg-level", "all=v");
     //mpv_set_option_string(handle.get(), "fullscreen","");
@@ -131,6 +133,12 @@ picojson::object mpv_manager::create_node_json_map(const mpv_node& node)
     return obj;
 }
 
+void mpv_manager::play_youtube(const std::string& youtube_id)
+{
+    const char* cmd[] = {"loadfile", ("ytdl://"+youtube_id).c_str(), "replace",nullptr};
+    mpv_command(handle.get(),cmd);
+}
+
 void mpv_manager::play(const std::string& path)
 {
     const char* cmd[] = {"loadfile", path.c_str(), "replace",nullptr};
@@ -164,7 +172,31 @@ void mpv_manager::set_volume(double vol)
         LOG4CPLUS_ERROR(logger, "Cannot set volume : "<< ss);
     }
 }
-
+void mpv_manager::backward()
+{
+    const char* cmd[] = {"seek", "-5", "relative",nullptr};
+    mpv_command(handle.get(),cmd);
+}
+void mpv_manager::fast_backward()
+{
+    const char* cmd[] = {"seek", "-60", "relative",nullptr};
+    mpv_command(handle.get(),cmd);
+}
+void mpv_manager::fast_forward()
+{
+    const char* cmd[] = {"seek", "60", "relative",nullptr};
+    mpv_command(handle.get(),cmd);
+}
+void mpv_manager::forward()
+{
+    const char* cmd[] = {"seek", "5", "relative",nullptr};
+    mpv_command(handle.get(),cmd);
+}
+void mpv_manager::seek_percent(double percent)
+{
+    const char* cmd[] = {"seek", std::to_string(percent).c_str(), "absolute-percent",nullptr};
+    mpv_command(handle.get(),cmd);    
+}
 mpv_status mpv_manager::get_mpv_status() const
 {
     mpv_status status;

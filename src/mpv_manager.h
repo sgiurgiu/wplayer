@@ -33,11 +33,17 @@ public:
     mpv_manager();
     ~mpv_manager();
     void play(const std::string& path);
+    void play_youtube(const std::string& youtube_id);
     void stop();
     void quit();
     void pause();
     void resume();
+    void forward();
+    void fast_forward();
+    void backward();
+    void fast_backward();
     void set_volume(double vol);
+    void seek_percent(double percent);
     mpv_status get_mpv_status() const;
 private:
     std::string create_metadata_object(mpv_node* metadata);

@@ -9,6 +9,10 @@ wplayerApp.config (['$routeProvider',function($routeProvider){
                                 templateUrl : '/movies.html',
                                 controller: 'MoviesListingController',
                                 controllerAs: 'movielist'
+                        }).when('/custom',{
+                                templateUrl : '/custom.html',
+                                controller: 'CustomPlayingController',
+                                controllerAs: 'custom'
                         }).otherwise({ redirectTo: '/current' });
                 }
         ]);

@@ -31,10 +31,16 @@ public:
 private:
     void handle_message(const std::string& msg);
     void play_command(const picojson::value& val);
+    void play_youtube_command(const picojson::value& val);
     void stop_command(const picojson::value&);
     void pause_command(const picojson::value&);
     void resume_command(const picojson::value&);
-    void volume_command(const picojson::value& val);
+    void volume_command(const picojson::value& val);    
+    void seek_percent_command(const picojson::value& val);
+    void forward_command(const picojson::value&);
+    void fast_forward_command(const picojson::value&);
+    void backward_command(const picojson::value&);
+    void fast_backward_command(const picojson::value&);
     void setup_ws_server();
     void setup_polling_thread();
     void report_status(ConnectionPtr connection);
