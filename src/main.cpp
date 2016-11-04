@@ -11,6 +11,7 @@
 #include <log4cplus/configurator.h>
 
 
+#include <boost/filesystem.hpp>
 
 int main(int argc, char** argv)
 { 
@@ -32,15 +33,24 @@ int main(int argc, char** argv)
         return 1;
     }        
 
-
     http_config config(commandLineOptions.config_file);
+    boost::filesystem::path logFile(commandLineOptions.log_file);
+    boost::filesystem::file_status logFileStatus = boost::filesystem::status(logFile);
+    if(logFileStatus.type() != boost::filesystem::regular_file)
+    {        
+        log4cplus::BasicConfigurator logConfig;
+        logConfig.configure();        
+    }
+    else
+    {
+        log4cplus::PropertyConfigurator logConfig(commandLineOptions.log_file);
+        logConfig.configure();
+    }    
     
-    log4cplus::BasicConfigurator logConfig;
-    logConfig.configure();
     log4cplus::Logger logger = log4cplus::Logger::getRoot();
     logger.setLogLevel(log4cplus::ALL_LOG_LEVEL);
 
-    if(opt.daemon)
+    if(commandLineOptions.daemon)
     {
         daemon(0,0);
     }
