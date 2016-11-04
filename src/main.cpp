@@ -48,11 +48,6 @@ int main(int argc, char** argv)
     }    
     log4cplus::Logger logger = log4cplus::Logger::getRoot();    
 
-    if(commandLineOptions.daemon)
-    {
-        daemon(0,0);
-    }
-
     file_controller files(config.http_server.files_folder);
     files_listing_controller files_listing(config);
     player_service ps(config);    
@@ -111,8 +106,14 @@ int main(int argc, char** argv)
     ([&files]() {
         return files.get_file_contents("index.html");
     });
- 
+
+    if(commandLineOptions.daemon)
+    {
+       // daemon(0,0);
+    }
+    
     app.port(config.http_server.port).bindaddr(config.http_server.bind_address).multithreaded().run();
-       
+
+    
     return 0;
 }

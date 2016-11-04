@@ -53,7 +53,7 @@ target_compile_options(${PROJECT_NAME} PUBLIC ${MPV_CFLAGS_OTHER})
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 
-install(DIRECTORY "web"
+install(DIRECTORY "web/"
   DESTINATION "/var/www/html/wplayer")
 
 install(FILES "config/wplayer.conf.sample"
@@ -61,6 +61,14 @@ install(FILES "config/wplayer.conf.sample"
 
 install(FILES "config/log.conf.sample"
   DESTINATION "/etc/wplayer")
+  
+install(FILES "config/wplayer.conf.sample"
+  DESTINATION "/etc/wplayer"
+  RENAME "wplayer.conf")
+
+install(FILES "config/log.conf.sample"
+  DESTINATION "/etc/wplayer"
+  RENAME "log.conf")
 
 install(FILES "service/wplayer.service" 
     DESTINATION "/etc/systemd/system"
@@ -71,10 +79,11 @@ SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Web MPV")
 SET(CPACK_PACKAGE_VENDOR "Sergiu Giurgiu")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Web MPV")
 SET(CPACK_PACKAGE_CONTACT "sgiurgiu11@gmail.com")
+SET( CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST "/var" "/var/www" "/var/www/html" "/etc" "/etc/systemd" "/etc/systemd/system" "/usr" "/usr/bin")
 
 SET(CPACK_PACKAGE_VERSION_MAJOR 0)
 SET(CPACK_PACKAGE_VERSION_MINOR 1)
-SET(CPACK_PACKAGE_VERSION_PATCH 0)
+SET(CPACK_PACKAGE_VERSION_PATCH 3)
 
 
 

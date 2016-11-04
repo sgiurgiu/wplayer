@@ -6,7 +6,7 @@
         },
     "http_server":
         {
-            "web_files_folder":"/var/www/html/wplayer",        
+            "web_files_folder":"/var/www/html/wplayer/",        
             "port":8080,
             "address":"0.0.0.0"
         },
