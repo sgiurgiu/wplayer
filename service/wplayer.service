@@ -1,0 +1,7 @@
+[Unit]
+Description=Web MPV
+After=network.target graphical.target
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/wplayer -d -c /etc/wplayer/wplayer.conf -l /etc/wplayer/log.conf

@@ -25,7 +25,6 @@ endif(CMAKE_BUILD_TYPE MATCHES Debug)
 include_directories(${Boost_INCLUDE_DIRS}) 
 link_directories(${Boost_LIBRARY_DIRS} ${MPV_LIBDIR})
 include_directories(${MPV_INCLUDE_DIRS})
-#include_directories(${HTTP_INCLUDE_DIRS})
 
 set(SOURCE_FILES src/main.cpp 
               src/mpv_manager.cpp
@@ -54,6 +53,19 @@ target_compile_options(${PROJECT_NAME} PUBLIC ${MPV_CFLAGS_OTHER})
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 
+install(DIRECTORY "web"
+  DESTINATION "/var/www/html/wplayer")
+
+install(FILES "config/wplayer.conf.sample"
+  DESTINATION "/etc/wplayer")
+
+install(FILES "config/log.conf.sample"
+  DESTINATION "/etc/wplayer")
+
+install(FILES "service/wplayer.service" 
+    DESTINATION "/etc/systemd/system"
+    PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
+    )
 SET(CPACK_PACKAGE_NAME "wplayer")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Web MPV")
 SET(CPACK_PACKAGE_VENDOR "Sergiu Giurgiu")

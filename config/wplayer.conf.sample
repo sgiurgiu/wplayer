@@ -1,0 +1,30 @@
+{
+    
+    "multimedia_sets": 
+        {
+            "Movies":"/mnt/nas/Movies"            
+        },
+    "http_server":
+        {
+            "web_files_folder":"/var/www/html/wplayer",        
+            "port":8080,
+            "address":"0.0.0.0"
+        },
+    "player_properties":
+        {            
+            "input-vo-keyboard":"yes",    
+            "profile":"opengl-hq",
+            "vo": "opengl-hq,opengl,vdpau,xv,",
+            "ao":"pulse,alsa",
+            "hwdec":"auto",
+            "terminal":"yes",
+            "ytdl":"",
+            "cursor-autohide":"always",
+            "osc":true,
+            "no-border":"",
+            "no-input-default-bindings":"",
+            "fullscreen":"",
+            "ontop":""
+        },
+        "display":"DISPLAY=:0"    
+}
