@@ -4,6 +4,7 @@
 #include "files_listing_controller.h"
 #include "crow/crow_all.h"
 #include "player_service.h"
+#include "options_parser.h"
 
 #include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
@@ -11,28 +12,42 @@
 
 
 
-int main(int /*argc*/, char** /*argv*/)
+int main(int argc, char** argv)
 { 
+    options_parser parser;
+    if(argc==1) {
+        parser.showHelp(std::cout);
+        return 1;
+    }
+
+    auto commandLineOptions = parser.parseArguments(argc,argv);
+
+    if(commandLineOptions.help) {
+        parser.showHelp(std::cout);
+        return 1;
+    }
+
+    if(commandLineOptions.version) {
+        parser.showVersion(std::cout);
+        return 1;
+    }        
 
 
-    http_config config;
-    config.files_folder = "web";
-    config.multimedia_folders["All"]="/mnt/homebackup/Downloads/complete/";
+    http_config config(commandLineOptions.config_file);
     
-
     log4cplus::BasicConfigurator logConfig;
     logConfig.configure();
     log4cplus::Logger logger = log4cplus::Logger::getRoot();
     logger.setLogLevel(log4cplus::ALL_LOG_LEVEL);
 
-
-    file_controller files(config.files_folder);
-    files_listing_controller files_listing(config);
-
-    if(false)
+    if(opt.daemon)
     {
         daemon(0,0);
     }
+
+    file_controller files(config.http_server.files_folder);
+    files_listing_controller files_listing(config);
+
 
     crow::SimpleApp app;
         
@@ -82,7 +97,7 @@ int main(int /*argc*/, char** /*argv*/)
         LOG4CPLUS_DEBUG(logger, "Starting WS Server:");                          
         ps.start();
     });
-    app.port(8080).multithreaded().run();
+    app.port(config.http_server.port).bindaddr(config.http_server.bind_address).multithreaded().run();
     LOG4CPLUS_DEBUG(logger, "Stopping WS Server");
     ps.stop();
     LOG4CPLUS_DEBUG(logger, "Stopped WS Server");

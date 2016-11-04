@@ -175,6 +175,7 @@ namespace picojson {
     std::string to_str() const;
     template <typename Iter> void serialize(Iter os, bool prettify = false) const;
     std::string serialize(bool prettify = false) const;
+    int get_type() const;
   private:
     template <typename T> value(const T*); // intentionally defined to block implicit conversion of pointer to bool
     template <typename Iter> static void _indent(Iter os, int indent);
@@ -185,6 +186,11 @@ namespace picojson {
   
   typedef value::array array;
   typedef value::object object;
+  
+  inline int value::get_type() const
+  {
+      return type_;
+  }
   
   inline value::value() : type_(null_type) {}
   
@@ -248,6 +254,8 @@ namespace picojson {
   inline value::value(const char* s, size_t len) : type_(string_type) {
     u_.string_ = new std::string(s, len);
   }
+  
+  
 
   inline void value::clear() {
     switch (type_) {

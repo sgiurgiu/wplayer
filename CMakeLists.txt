@@ -35,7 +35,8 @@ set(SOURCE_FILES src/main.cpp
               src/magic_handler.cpp
               src/not_found_exception.cpp
               src/utils.cpp
-              src/player_service.cpp)
+              src/player_service.cpp
+              src/options_parser.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
@@ -52,3 +53,19 @@ target_compile_options(${PROJECT_NAME} PUBLIC ${MPV_CFLAGS_OTHER})
 
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+
+SET(CPACK_PACKAGE_NAME "wplayer")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Web MPV")
+SET(CPACK_PACKAGE_VENDOR "Sergiu Giurgiu")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Web MPV")
+SET(CPACK_PACKAGE_CONTACT "sgiurgiu11@gmail.com")
+
+SET(CPACK_PACKAGE_VERSION_MAJOR 0)
+SET(CPACK_PACKAGE_VERSION_MINOR 1)
+SET(CPACK_PACKAGE_VERSION_PATCH 0)
+
+
+
+SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+
+INCLUDE(CPack)

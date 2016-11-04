@@ -6,6 +6,7 @@
 #include <mpv/client.h>
 #include <log4cplus/logger.h>
 #include "picojson.h"
+#include "http_config.h"
 
 struct mpv_handle_deleter
 {
@@ -30,7 +31,7 @@ struct mpv_status
 class mpv_manager
 {
 public:
-    mpv_manager();
+    mpv_manager(const http_config& config);
     ~mpv_manager();
     void play(const std::string& path);
     void play_youtube(const std::string& youtube_id);

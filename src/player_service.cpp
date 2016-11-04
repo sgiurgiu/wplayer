@@ -6,7 +6,7 @@
 #include <boost/filesystem.hpp>
 #include <chrono>
 
-player_service::player_service(const http_config &config):done_polling(false),mpv(new mpv_manager()),wsServer(9090,2),multimedia_folders(config.multimedia_folders),
+player_service::player_service(const http_config &config):done_polling(false),mpv(new mpv_manager(config)),wsServer(9090,2),multimedia_folders(config.multimedia_folders),
                                                     logger(log4cplus::Logger::getInstance("player_service"))
 {
     using namespace std::placeholders;   
@@ -62,18 +62,6 @@ void player_service::setup_ws_server()
         auto message_str = message->string();            
         LOG4CPLUS_DEBUG(logger, "Server: Message received: \"" << message_str << "\" from " << (size_t)connection.get());  
         handle_message(message_str);            
-                
-        /*auto send_stream=std::make_shared<WsServer::SendStream>();
-        *send_stream << message_str;
-        wsServer.send(connection, send_stream, [](const boost::system::error_code& ec){
-            if(ec) 
-            {
-                log4cplus::Logger logger(log4cplus::Logger::getInstance("player_service_send"));
-                LOG4CPLUS_DEBUG(logger, "Server: Error sending message. " <<
-                //See http://www.boost.org/doc/libs/1_55_0/doc/html/boost_asio/reference.html, Error Codes for error code meanings
-                        "Error: " << ec << ", error message: " << ec.message());
-            }
-        });        */
     };
     
     endpoint.onopen = [this](ConnectionPtr connection){

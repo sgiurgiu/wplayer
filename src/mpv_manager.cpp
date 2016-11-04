@@ -4,30 +4,55 @@
 #include <iostream>
 #include <thread>
 
+#include <boost/variant.hpp>
 
-mpv_manager::mpv_manager()
+class mpv_option_visitor
+    : public boost::static_visitor<>
+{
+private:
+    std::string key;
+    mpv_handle* handle;    
+public:
+    mpv_option_visitor(const std::string& key,mpv_handle* handle):key(key),handle(handle)
+    {
+    }    
+    void operator()(int64_t i) const
+    {
+        mpv_set_option(handle, key.c_str(), MPV_FORMAT_INT64, &i);
+    }
+    void operator()(const std::string & str) const
+    {
+        mpv_set_option_string(handle, key.c_str(), str.c_str());
+    }
+    void operator()(bool b) const
+    {
+        mpv_set_option(handle, key.c_str(), MPV_FORMAT_FLAG, &b);
+    }
+    void operator()(double d) const
+    {
+        mpv_set_option(handle, key.c_str(), MPV_FORMAT_DOUBLE, &d);
+    }
+};
+#include <string.h>
+mpv_manager::mpv_manager(const http_config& config)
     :handle(mpv_create(),mpv_handle_deleter()),logger(log4cplus::Logger::getInstance("mpv_manager"))
 {
-    const char* env = "DISPLAY=:0";
-    putenv((char*)env);
-    mpv_set_option_string(handle.get(), "input-default-bindings", "yes");
-    mpv_set_option_string(handle.get(), "input-vo-keyboard", "yes");    
-    mpv_set_option_string(handle.get(), "profile", "opengl-hq");
-    mpv_set_option_string(handle.get(), "vo", "opengl,vdpau,xv,");
-    mpv_set_option_string(handle.get(), "ao", "pulse,alsa");
-    mpv_set_option_string(handle.get(), "hwdec", "auto");
-    mpv_set_option_string(handle.get(), "terminal", "yes");    
-    mpv_set_option_string(handle.get(), "ytdl","");
+    //const char* env = "DISPLAY=:0";
+    putenv((char*)config.display.c_str());
+    
+    
+    for(const auto& pair : config.player_properties)
+    {
+        boost::apply_visitor(mpv_option_visitor(pair.first,handle.get()),pair.second);
+    }
+
     //mpv_set_option_string(handle.get(),"no-input-default-bindings","");
     //mpv_set_option_string(handle.get(), "msg-level", "all=v");
     //mpv_set_option_string(handle.get(), "fullscreen","");
     //mpv_set_option_string(handle.get(), "ontop","");
     //mpv_set_option_string(handle.get(), "no-border","");
     //mpv_set_option_string(handle.get(), "cursor-autohide","always");
-
-    // mpv_set_option(handle.get(), "wid", MPV_FORMAT_INT64, &win);
-    int val = 1;
-    mpv_set_option(handle.get(), "osc", MPV_FORMAT_FLAG, &val);
+    
     mpv_request_event(handle.get(),MPV_EVENT_LOG_MESSAGE,0);
     mpv_request_event(handle.get(),MPV_EVENT_GET_PROPERTY_REPLY,0);
     mpv_request_event(handle.get(),MPV_EVENT_SET_PROPERTY_REPLY,0);
