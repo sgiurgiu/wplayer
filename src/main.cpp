@@ -46,9 +46,7 @@ int main(int argc, char** argv)
         log4cplus::PropertyConfigurator logConfig(commandLineOptions.log_file);
         logConfig.configure();
     }    
-    
-    log4cplus::Logger logger = log4cplus::Logger::getRoot();
-    logger.setLogLevel(log4cplus::ALL_LOG_LEVEL);
+    log4cplus::Logger logger = log4cplus::Logger::getRoot();    
 
     if(commandLineOptions.daemon)
     {
@@ -57,11 +55,23 @@ int main(int argc, char** argv)
 
     file_controller files(config.http_server.files_folder);
     files_listing_controller files_listing(config);
-
+    player_service ps(config);    
 
     crow::SimpleApp app;
         
-
+   
+    CROW_ROUTE(app,"/player")
+    .websocket()
+    .onopen([&ps](crow::websocket::connection& conn) {
+        ps.add_connection(&conn);
+    })
+    .onclose([&ps](crow::websocket::connection& conn, const std::string& /*reason*/){
+        ps.remove_connection(&conn);
+    })
+    .onmessage([&ps](crow::websocket::connection& /*conn*/, const std::string& data, bool /*is_binary*/){
+        ps.handle_message(data);
+    });    
+    
     CROW_ROUTE(app,"/api/files/<string>/<path>")        
     ([&files_listing](const std::string& set,const std::string& path){
         return files_listing.get(set,path);        
@@ -101,16 +111,8 @@ int main(int argc, char** argv)
     ([&files]() {
         return files.get_file_contents("index.html");
     });
-        
-    player_service ps(config);
-    std::thread player_service_thread([&logger,&ps]() {
-        LOG4CPLUS_DEBUG(logger, "Starting WS Server:");                          
-        ps.start();
-    });
+ 
     app.port(config.http_server.port).bindaddr(config.http_server.bind_address).multithreaded().run();
-    LOG4CPLUS_DEBUG(logger, "Stopping WS Server");
-    ps.stop();
-    LOG4CPLUS_DEBUG(logger, "Stopped WS Server");
-    player_service_thread.join();
+       
     return 0;
 }

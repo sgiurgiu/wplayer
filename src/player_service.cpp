@@ -5,8 +5,9 @@
 #include <log4cplus/loggingmacros.h>
 #include <boost/filesystem.hpp>
 #include <chrono>
+#include "crow/crow_all.h"
 
-player_service::player_service(const http_config &config):done_polling(false),mpv(new mpv_manager(config)),wsServer(9090,2),multimedia_folders(config.multimedia_folders),
+player_service::player_service(const http_config &config):done_polling(false),mpv(new mpv_manager(config)),multimedia_folders(config.multimedia_folders),
                                                     logger(log4cplus::Logger::getInstance("player_service"))
 {
     using namespace std::placeholders;   
@@ -22,22 +23,13 @@ player_service::player_service(const http_config &config):done_polling(false),mp
     handlers_map["seek-percent"]=std::bind(&player_service::seek_percent_command,this,_1);
     handlers_map["youtube"]=std::bind(&player_service::play_youtube_command,this,_1);  
     
+    setup_polling_thread();
 }
-player_service::~player_service() = default;
-
-void player_service::stop()
+player_service::~player_service()
 {
-    wsServer.stop();
     mpv->quit();
     done_polling = true;
     mpv_status_polling_thread.join();
-}
-
-void player_service::start()
-{
-    setup_polling_thread();
-    setup_ws_server();
-    wsServer.start();
 }
 
 void player_service::setup_polling_thread()
@@ -47,7 +39,8 @@ void player_service::setup_polling_thread()
         {
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(2s);
-            for(auto con: wsServer.get_connections())
+            std::lock_guard<std::mutex> lock(mtx);
+            for(auto con: connections)
             {
                 report_status(con);
             }
@@ -55,25 +48,19 @@ void player_service::setup_polling_thread()
     });
 }
 
-void player_service::setup_ws_server()
+void player_service::add_connection(crow::websocket::connection* connection)
 {
-    auto& endpoint = wsServer.endpoint["^/player/?$"];    
-    endpoint.onmessage = [this](ConnectionPtr connection, MessagePtr message) {
-        auto message_str = message->string();            
-        LOG4CPLUS_DEBUG(logger, "Server: Message received: \"" << message_str << "\" from " << (size_t)connection.get());  
-        handle_message(message_str);            
-    };
-    
-    endpoint.onopen = [this](ConnectionPtr connection){
-        LOG4CPLUS_DEBUG(logger, "Opened connection ");                  
-        report_status(connection);
-    };
-    endpoint.onclose = [this](ConnectionPtr /*connection*/,int status, const std::string& reason){
-        LOG4CPLUS_DEBUG(logger, "Closed connection "<<status<<", reason: "<<reason);                  
-    }; 
+    std::lock_guard<std::mutex> lock(mtx);
+    connections.insert(connection);
+    report_status(connection);
+}
+void player_service::remove_connection(crow::websocket::connection* connection)
+{
+    std::lock_guard<std::mutex> lock(mtx);
+    connections.erase(connection);
 }
 
-void player_service::report_status(ConnectionPtr connection)
+void player_service::report_status(crow::websocket::connection* connection)
 {
     mpv_status status = mpv->get_mpv_status();
     picojson::object status_obj;
@@ -86,13 +73,13 @@ void player_service::report_status(ConnectionPtr connection)
     status_obj.insert({"volume",picojson::value(status.audio_volume)});
     status_obj.insert({"paused",picojson::value(status.paused)});
     status_obj.insert({"seekable",picojson::value(status.seekable)});
-    auto send_stream=std::make_shared<WsServer::SendStream>();
-    *send_stream << picojson::value(status_obj).serialize();
-    wsServer.send(connection, send_stream, [](const boost::system::error_code&){});            
+    
+    connection->send_text(picojson::value(status_obj).serialize());    
 }
 
 void player_service::handle_message(const std::string& msg)
 {
+    LOG4CPLUS_DEBUG(logger, "Server: Message received: \"" << msg);  
     picojson::value msg_val;
     std::string err = picojson::parse(msg_val, msg);
     if(!err.empty())

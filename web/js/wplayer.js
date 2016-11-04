@@ -40,7 +40,7 @@ wplayerApp.filter('duration', function() {
 });
 
 wplayerApp.run(function($rootScope,$location,$log) {
-    $rootScope.ws=new WebSocket("ws://"+$location.host()+":9090/player/");
+    $rootScope.ws=new WebSocket("ws://"+$location.host()+":"+$location.port()+"/player");
     $rootScope.playFile = function(file) {
         $log.log('playing file '+file.name);
         $rootScope.ws.send(JSON.stringify({name:'play',link:file.link}));      
