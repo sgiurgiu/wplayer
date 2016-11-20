@@ -161,9 +161,9 @@ picojson::object mpv_manager::create_node_json_map(const mpv_node& node)
     return obj;
 }
 
-void mpv_manager::play_youtube(const std::string& youtube_id)
+void mpv_manager::play_youtube(const std::string& youtube_url)
 {
-    const char* cmd[] = {"loadfile", ("ytdl://"+youtube_id).c_str(), "replace",nullptr};
+    const char* cmd[] = {"loadfile", youtube_url.c_str(), "replace",nullptr};
     mpv_command(handle.get(),cmd);
 }
 

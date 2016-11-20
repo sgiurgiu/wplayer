@@ -34,7 +34,7 @@ public:
     mpv_manager(const http_config& config);
     ~mpv_manager();
     void play(const std::string& path);
-    void play_youtube(const std::string& youtube_id);
+    void play_youtube(const std::string& youtube_url);
     void stop();
     void quit();
     void pause();

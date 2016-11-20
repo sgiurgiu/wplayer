@@ -84,7 +84,7 @@ SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Web MPV")
 SET(CPACK_PACKAGE_VENDOR "Sergiu Giurgiu")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Web MPV")
 SET(CPACK_PACKAGE_CONTACT "sgiurgiu11@gmail.com")
-SET( CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST "/var" "/var/www" "/var/www/html" "/etc" "/etc/systemd" "/etc/systemd/system" "/usr" "/usr/bin" "/etc/systemd/user")
+SET(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST "/var" "/var/www" "/var/www/html" "/etc" "/etc/systemd" "/etc/systemd/system" "/usr" "/usr/bin" "/etc/systemd/user")
 
 SET(CPACK_PACKAGE_VERSION_MAJOR 0)
 SET(CPACK_PACKAGE_VERSION_MINOR 1)
