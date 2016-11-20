@@ -2,17 +2,18 @@ wplayerAppControllers.controller('MoviesListingController', function($scope,$htt
 	$scope.files_list = [];
 
 	$scope.loadFiles = function(path) {
-                var url = '/api/files';
-                if(path !== '')  url+= '/'+path;
-		$http.get(url)
-			.success(function(data){
-                                $scope.cur_dir = data.cur_dir;
-				$scope.files_list = data.files;
-				$log.log('got files '+data);
-			})
-			.error(function(response){
+            $scope.files_list = [];
+            var url = '/api/files';
+            if(path !== '' && path !== null)  url+= '/'+path;
+            $http.get(url)
+                    .success(function(data){
+                            $scope.cur_dir = data.cur_dir;
+                            $scope.files_list = data.files;
+                            $log.log('got files '+data);
+                    })
+                    .error(function(response){
 
-			});
+                    });
 	};
 
         $log.log('Loading files');

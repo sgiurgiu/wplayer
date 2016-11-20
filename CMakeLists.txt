@@ -17,6 +17,7 @@ set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}:/usr/local/lib/pkgconfig/")
 find_package(PkgConfig REQUIRED)
 pkg_search_module(MPV REQUIRED /usr/local/lib/pkgconfig/mpv.pc)
 
+include(GNUInstallDirs)
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions(-DWPLAYER_DEBUG)
@@ -53,33 +54,37 @@ target_compile_options(${PROJECT_NAME} PUBLIC ${MPV_CFLAGS_OTHER})
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 
+set(CPACK_RPM_RELOCATION_PATHS "/${CMAKE_INSTALL_SYSCONFDIR}" "${CMAKE_INSTALL_BINDIR}")
+
+
 install(DIRECTORY "web/"
   DESTINATION "/var/www/html/wplayer")
 
 install(FILES "config/wplayer.conf.sample"
-  DESTINATION "/etc/wplayer")
+  DESTINATION "/${CMAKE_INSTALL_SYSCONFDIR}/wplayer")
 
 install(FILES "config/log.conf.sample"
-  DESTINATION "/etc/wplayer")
+  DESTINATION "/${CMAKE_INSTALL_SYSCONFDIR}/wplayer")
   
 install(FILES "config/wplayer.conf.sample"
-  DESTINATION "/etc/wplayer"
+  DESTINATION "/${CMAKE_INSTALL_SYSCONFDIR}/wplayer"
   RENAME "wplayer.conf")
 
 install(FILES "config/log.conf.sample"
-  DESTINATION "/etc/wplayer"
+  DESTINATION "/${CMAKE_INSTALL_SYSCONFDIR}/wplayer"
   RENAME "log.conf")
 
 install(FILES "service/wplayer.service" 
-    DESTINATION "/etc/systemd/system"
+    DESTINATION "/${CMAKE_INSTALL_SYSCONFDIR}/systemd/system"
     PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
+    RENAME "wplayer@.service"
     )
 SET(CPACK_PACKAGE_NAME "wplayer")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Web MPV")
 SET(CPACK_PACKAGE_VENDOR "Sergiu Giurgiu")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Web MPV")
 SET(CPACK_PACKAGE_CONTACT "sgiurgiu11@gmail.com")
-SET( CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST "/var" "/var/www" "/var/www/html" "/etc" "/etc/systemd" "/etc/systemd/system" "/usr" "/usr/bin")
+SET( CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST "/var" "/var/www" "/var/www/html" "/etc" "/etc/systemd" "/etc/systemd/system" "/usr" "/usr/bin" "/etc/systemd/user")
 
 SET(CPACK_PACKAGE_VERSION_MAJOR 0)
 SET(CPACK_PACKAGE_VERSION_MINOR 1)
