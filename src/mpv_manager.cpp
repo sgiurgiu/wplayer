@@ -38,7 +38,10 @@ mpv_manager::mpv_manager(const http_config& config)
     :handle(mpv_create(),mpv_handle_deleter()),logger(log4cplus::Logger::getInstance("mpv_manager"))
 {
     //const char* env = "DISPLAY=:0";
-    putenv((char*)config.display.c_str());
+    for(const auto& env : config.environment)
+    {
+        putenv((char*)env.c_str());
+    }
     
     
     for(const auto& pair : config.player_properties)

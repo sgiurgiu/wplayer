@@ -4,6 +4,7 @@ wplayerAppControllers.controller('MoviesListingController', function($scope,$htt
 	$scope.loadFiles = function(path) {
             $scope.files_list = [];
             var url = '/api/files';
+            
             if(path !== '' && path !== null)  url+= '/'+path;
             $http.get(url)
                     .success(function(data){

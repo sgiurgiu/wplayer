@@ -12,7 +12,17 @@ http_config::http_config(const std::string& config_file)
     if (!res.empty()) {
         throw std::runtime_error("Cannot parse "+config_file+". Error: "+res);
     }
-    display = config.get("display").to_str();
+    
+    picojson::value environment_variables = config.get("environment");
+    if(environment_variables.is<picojson::array>())
+    {
+        picojson::array environment_array = environment_variables.get<picojson::array>();
+        for(const auto& env : environment_array)
+        {
+            environment.push_back(env.to_str());
+        }        
+    }
+    
     picojson::value multimedia_sets = config.get("multimedia_sets");
     if(multimedia_sets.is<picojson::null>() || !multimedia_sets.is<picojson::object>())
     {

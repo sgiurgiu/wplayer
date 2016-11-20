@@ -26,5 +26,5 @@
             "fullscreen":"",
             "ontop":""
         },
-        "display":"DISPLAY=:0"    
+        "environment":["DISPLAY=:0"]
 }

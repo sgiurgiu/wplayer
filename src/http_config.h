@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <boost/variant.hpp>
+#include <vector>
 
 typedef std::map<std::string,std::string> folders;
 typedef std::map<std::string,boost::variant<double,int64_t,bool,std::string>> variant_map;
@@ -21,7 +22,7 @@ public:
     folders multimedia_folders;    
     server_config http_server;
     variant_map player_properties;
-    std::string display;
+    std::vector<std::string> environment;
 };
 
 #endif // HTTP_CONFIG_H
