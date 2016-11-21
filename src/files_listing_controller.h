@@ -16,7 +16,7 @@ class files_listing_controller
 public:
     files_listing_controller(const http_config& config);
     ~files_listing_controller();
-    crow::response get(const std::string& set,const std::string& path) const;
+    crow::response get(const std::string& path) const;
     crow::response get_sets() const;
 private:
   folders multimedia_folders;

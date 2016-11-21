@@ -67,13 +67,9 @@ int main(int argc, char** argv)
         ps.handle_message(data);
     });    
     
-    CROW_ROUTE(app,"/api/files/<string>/<path>")        
-    ([&files_listing](const std::string& set,const std::string& path){
-        return files_listing.get(set,path);        
-    });    
-    CROW_ROUTE(app,"/api/files/<string>/")
-    ([&files_listing](const std::string& set){
-        return files_listing.get(set,"");        
+    CROW_ROUTE(app,"/api/files/<path>")
+    ([&files_listing](const std::string& path){
+        return files_listing.get(path);        
     });      
     CROW_ROUTE(app,"/api/files")        
     ([&files_listing](){

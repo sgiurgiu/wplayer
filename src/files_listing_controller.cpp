@@ -55,30 +55,35 @@ crow::response files_listing_controller::get_sets() const
     return rsp;    
 }
 
-crow::response files_listing_controller::get(const std::string& set,const std::string& path) const
-{
-    std::string working_set = set;
-    std::string working_path = path;
-    LOG4CPLUS_DEBUG(logger, "Serving path "<<path<<" from set "<<set);
-    utils::unescape(working_set);
-    utils::unescape(working_path);
-    boost::filesystem::path working_path_folder(working_path);
-    boost::filesystem::path working_folder(working_set);
-    working_folder /= working_path_folder;
-
-    LOG4CPLUS_DEBUG(logger, "After unescape serving path "<<working_path<<" from set "<<working_set);
+crow::response files_listing_controller::get(const std::string& path) const
+{    
+    LOG4CPLUS_DEBUG(logger, "Serving path "<<path);    
+    std::string decoded_path = utils::decode(path);        
+    boost::filesystem::path working_folder(decoded_path);
+    LOG4CPLUS_DEBUG(logger, "After unescape serving path "<<decoded_path);
+    working_folder.remove_trailing_separator();
+    LOG4CPLUS_DEBUG(logger, "working_folder.parent_path().string() "<<working_folder.parent_path());
     std::vector<boost::filesystem::path> dir_entries;    
     try
     {
-        if(multimedia_folders.find(working_set) != multimedia_folders.end())
+        boost::filesystem::path base_folder;
+        for(const auto& path : working_folder)
         {
-            boost::filesystem::path base_folder(multimedia_folders.at(working_set));
-            base_folder /= working_path_folder;
-            LOG4CPLUS_DEBUG(logger, "List folder of  "<<base_folder);
-            if(exists(base_folder) || is_directory(base_folder))
+            if(base_folder.empty() && multimedia_folders.find(path.string()) != multimedia_folders.end())
             {
-                copy(directory_iterator(base_folder), directory_iterator(),std::back_inserter(dir_entries));
+                base_folder /= multimedia_folders.at(path.string());
             }
+            else
+            {
+                base_folder /= path;
+            }
+            LOG4CPLUS_DEBUG(logger, "path "<<path.string()<<" and base folder:"<<base_folder);    
+        }
+        base_folder = canonical(base_folder);
+        LOG4CPLUS_DEBUG(logger, "List folder of  "<<base_folder);
+        if(exists(base_folder) || is_directory(base_folder))
+        {
+            copy(directory_iterator(base_folder), directory_iterator(),std::back_inserter(dir_entries));
         }
     }
     catch(const filesystem_error& ex)
@@ -115,7 +120,7 @@ crow::response files_listing_controller::get(const std::string& set,const std::s
             if(is_other(entry)) continue;
             bool is_file = is_regular_file(entry);
             std::string link = (working_folder / name).string();
-            LOG4CPLUS_DEBUG(logger, "Creating link "<<link<<" from working path "<<working_path<<" and set "<<set<<" and name "<<name);
+            LOG4CPLUS_DEBUG(logger, "Creating link "<<link<<" from working path "<<working_folder<<" and name "<<name);
             picojson::value::object json_object;
             json_object.insert({"name",picojson::value(name)});
             json_object.insert({"link",picojson::value(link)});
