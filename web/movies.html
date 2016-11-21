@@ -18,7 +18,7 @@
 				<td>{{$index+1}}</td>
 				<td>
 					<i class="fa {{file.type==='dir'?'fa-folder':'fa-file'}}"></i>
-                                        <a ng-if="file.type==='dir'" href="#!/{{file.link}}">{{file.name}}</a>
+                                        <a ng-if="file.type==='dir'" href="#!/movies/{{file.link}}">{{file.name}}</a>
                                         <span ng-if="file.type==='file'">{{file.name}}</span>
 				</td>
                                 <td>{{(file.type==='file'?file.size:'')|bytes}}</td>

@@ -3,18 +3,19 @@
 var wplayerApp = angular.module('wplayer', ['ui.bootstrap','ngRoute','ngAnimate','current','movies','custom','files.service']);
 
 wplayerApp.config (['$routeProvider','$locationProvider',function config($routeProvider,$locationProvider){
-                        $locationProvider.html5Mode(true);
+                      //  $locationProvider.html5Mode(true);
                         $locationProvider.hashPrefix('!');
 
-                        $routeProvider.when('/current',{
-                                template : '<current></current>',
-                        }).when('/movies/:path',{
-                                template : '<movies></movies>',                        
+                        $routeProvider
+                        .when('/current',{
+                                template : '<current></current>'
+                        }).when('/movies/:path*',{
+                                template : '<movies></movies>'                       
                         }).when('/movies',{
-                                template : '<movies></movies>',                        
+                                template : '<movies></movies>'                        
                         }).when('/custom',{
-                                template : '<custom></custom>',
-                        }).otherwise({ redirectTo: '/movies' });
+                                template : '<custom></custom>'
+                        }).otherwise('/movies');
                 }
         ]);
 
