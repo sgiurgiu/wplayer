@@ -1,4 +1,8 @@
-wplayerAppControllers.controller('CurrentPlayingController', function($scope,$log) {
+angular.module('current',[]);
+
+angular.module('current').component('current',{
+    templateUrl:'current.html',
+    controller: function($scope,$log) {
 	
     $scope.props = {
             vol_value :0,
@@ -47,4 +51,7 @@ wplayerAppControllers.controller('CurrentPlayingController', function($scope,$lo
     $log.log("$scope.current_movie:"+$scope.current_movie);    
       
     
+}
 });
+                                    
+                                    

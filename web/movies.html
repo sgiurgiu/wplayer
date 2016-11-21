@@ -1,8 +1,11 @@
 <div class="row">
+    <div class="col-md-12">
 	<h4>Files Listing</h4>
-	<p ng-if="cur_dir">Current directory: {{cur_dir}}</p>
+	<p ng-if="cur_dir">Current directory: {{$ctrl.cur_dir}}</p>
+    </div>
 </div>
 <div class="row">
+    <div class="col-md-12">
 	<table class="table table-condensed">
 		<thead>
 			<td width="1%">#</td>
@@ -11,19 +14,20 @@
                         <td width="15%"></td>
 		</thead>
 		<tbody>
-			<tr ng-repeat="file in files_list">
+			<tr ng-repeat="file in $ctrl.files_list">
 				<td>{{$index+1}}</td>
 				<td>
 					<i class="fa {{file.type==='dir'?'fa-folder':'fa-file'}}"></i>
-                                        <a ng-if="file.type==='dir'" ng-click="loadFiles(file.link)" href="">{{file.name}}</a>
+                                        <a ng-if="file.type==='dir'" href="#!/{{file.link}}">{{file.name}}</a>
                                         <span ng-if="file.type==='file'">{{file.name}}</span>
 				</td>
                                 <td>{{(file.type==='file'?file.size:'')|bytes}}</td>
                                 <td>
-                                        <button class="btn btn-default" ng-if="!file.parent" ng-click="playFile(file)"><i class="fa fa-play-circle-o" aria-hidden="true"></i></button>
+                                        <button class="btn btn-default pull-right" ng-if="!file.parent" ng-click="playFile(file)"><i class="fa fa-play-circle-o" aria-hidden="true"></i></button>
                                 </td>
 			</tr>
 		</tbody>
 	</table>
+    </div>
 </div>
 

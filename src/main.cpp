@@ -85,7 +85,7 @@ int main(int argc, char** argv)
     ([&files]() {
         return files.get_file_contents("index.html");
     });
-    CROW_ROUTE(app,"/movies")
+    CROW_ROUTE(app,"/movies/")
     .methods("GET"_method)
     ([&files]() {
         return files.get_file_contents("index.html");

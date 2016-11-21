@@ -1,24 +1,20 @@
-var wplayerApp = angular.module('wplayer', ['ui.bootstrap','ngRoute','ngAnimate','wplayerAppControllers']);
+'use strict';
 
-wplayerApp.config (['$routeProvider',function($routeProvider){
-                        $routeProvider.when('/current',{
-                                templateUrl : '/current.html',
-                                controller: 'CurrentPlayingController',
-                                controllerAs: 'current'
-                        }).when('/movies',{
-                                templateUrl : '/movies.html',
-                                controller: 'MoviesListingController',
-                                controllerAs: 'movielist'
-                        }).when('/custom',{
-                                templateUrl : '/custom.html',
-                                controller: 'CustomPlayingController',
-                                controllerAs: 'custom'
-                        }).otherwise({ redirectTo: '/current' });
-                }
-        ]);
+var wplayerApp = angular.module('wplayer', ['ui.bootstrap','ngRoute','ngAnimate','current','movies','custom','files.service']);
 
-wplayerApp.config (['$locationProvider',function($locationProvider){
+wplayerApp.config (['$routeProvider','$locationProvider',function config($routeProvider,$locationProvider){
                         $locationProvider.html5Mode(true);
+                        $locationProvider.hashPrefix('!');
+
+                        $routeProvider.when('/current',{
+                                template : '<current></current>',
+                        }).when('/movies/:path',{
+                                template : '<movies></movies>',                        
+                        }).when('/movies',{
+                                template : '<movies></movies>',                        
+                        }).when('/custom',{
+                                template : '<custom></custom>',
+                        }).otherwise({ redirectTo: '/movies' });
                 }
         ]);
 
@@ -47,11 +43,11 @@ wplayerApp.run(function($rootScope,$location,$log) {
     };
     $rootScope.current_movie = {};
     $rootScope.ws.onmessage=function(evt) {
-        $log.log("received:"+evt.data);        
+        //$log.log("received:"+evt.data);        
         $rootScope.$apply(function(){
             $rootScope.current_movie = JSON.parse(evt.data);
-            $log.log("$scope.current_movie:"+$rootScope.current_movie);
-            $log.log("$scope.current_movie:"+$rootScope.current_movie.file_name);                            
+            //$log.log("$scope.current_movie:"+$rootScope.current_movie);
+            //$log.log("$scope.current_movie:"+$rootScope.current_movie.file_name);                            
         });
     };
       
@@ -61,10 +57,3 @@ wplayerApp.run(function($rootScope,$location,$log) {
     
 });
 
-var wplayerAppControllers = angular.module('wplayerAppControllers',[]);
-
-wplayerAppControllers.controller('WPlayerController',function($scope,$route,$location,$log){
-	$scope.$route = $route;	
-    
-
-});
