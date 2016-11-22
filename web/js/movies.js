@@ -1,25 +1,19 @@
-angular.module('movies', ['files.service']);
+angular.module('movies', ['files.service','player.service']);
 
 angular.module('movies').component('movies', {
     templateUrl:'movies.html',
-    controller:['$routeParams','$log','$location','Files',  function($routeParams,$log,$location,Files) {
+    controller:['$routeParams','$log','$location','Files','Player',  function($routeParams,$log,$location,Files,Player) {
         var self = this;
 	self.files_list = [];
+        Files.list({'path':$routeParams.path},function(data){
+            self.cur_dir = data.cur_dir;
+            self.files_list = data.files;
+            $log.log('got files '+data);                
+        });
 
-	self.loadFiles = function(path) {
-            
-            self.files_list = [];
-            
-            Files.list({'path':path},path,function(data){
-                self.cur_dir = data.cur_dir;
-                self.files_list = data.files;
-                $log.log('got files '+data);                
-            });
-	};
-
-        $log.log('route params:'+JSON.stringify($routeParams.path));
-        $log.log('location :'+JSON.stringify($location));
-	self.loadFiles($routeParams.path);
+	self.playFile = function(file) {
+            Player.playFile(file);
+        };
     }
         
     ]

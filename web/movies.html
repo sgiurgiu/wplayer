@@ -23,7 +23,7 @@
 				</td>
                                 <td>{{(file.type==='file'?file.size:'')|bytes}}</td>
                                 <td>
-                                        <button class="btn btn-default pull-right" ng-if="!file.parent" ng-click="playFile(file)"><i class="fa fa-play-circle-o" aria-hidden="true"></i></button>
+                                        <button class="btn btn-default pull-right" ng-if="!file.parent" ng-click="$ctrl.playFile(file)"><i class="fa fa-play-circle-o" aria-hidden="true"></i></button>
                                 </td>
 			</tr>
 		</tbody>

@@ -1,57 +1,63 @@
-angular.module('current',[]);
+angular.module('current',['player.service']);
 
 angular.module('current').component('current',{
     templateUrl:'current.html',
-    controller: function($scope,$log) {
-	
-    $scope.props = {
-            vol_value :0,
-            enable_seek:false
-    };
+    controller: ['Player','$log','$scope',function(Player,$log,$scope) {
     
-    $scope.stopPlay = function() {        
-        $scope.ws.send(JSON.stringify({name:'stop'}));      
-    };
-    
-    $scope.pausePlay = function() {        
-        $scope.ws.send(JSON.stringify({name:'pause'}));      
-    };
-    $scope.resumePlay = function() {        
-        $scope.ws.send(JSON.stringify({name:'resume'}));      
-    };
-    $scope.pauseResumePlay = function() {
-        $scope.current_movie.paused  = !$scope.current_movie.paused;
-        $scope.ws.send(JSON.stringify({name:$scope.current_movie.paused?'pause':'resume'}));              
-    };
-    
-    $scope.setVolume = function (){
-        $log.log('volume:'+$scope.props.vol_value);
-        $scope.ws.send(JSON.stringify({name:'volume',value:$scope.current_movie.volume}));      
-    };
-    $scope.backward = function() {
-        $scope.ws.send(JSON.stringify({name:'backward'}));      
-    };
-    $scope.forward = function() {
-        $scope.ws.send(JSON.stringify({name:'forward'}));      
-    };
-    $scope.fastBackward = function() {
-        $scope.ws.send(JSON.stringify({name:'fast-backward'}));      
-    };
-    $scope.fastForward = function() {
-        $scope.ws.send(JSON.stringify({name:'fast-forward'}));      
-    };
-    $scope.seekPercent = function(e) {
-        if(!$scope.props.enable_seek) return;
-        var fullProgressBarWidth = $(e.currentTarget).width();
-        var requestedPosition = e.offsetX / fullProgressBarWidth * 100;        
-        $log.log('seek percent: '+requestedPosition);
-        $scope.ws.send(JSON.stringify({name:'seek-percent',value:requestedPosition}));      
-    };
+        var self = this;
+        self.current_movie = {};
+        self.current_movie_paused = false;
+        
+        $scope.$watch(function(){return Player.getCurrentMovie();},function(newValue,oldValue){
+            $log.log('self$wattch current movie '+JSON.stringify(newValue));
+                self.current_movie = newValue;
+        });
+        
+        self.props = {
             
-    $log.log("$scope.current_movie:"+$scope.current_movie);    
-      
+                enable_seek:false
+        };
+        
+        self.stopPlay = function() {        
+            Player.stopPlay();
+        };
+        
+        self.pausePlay = function() {        
+            Player.pausePlay();
+        };
+        self.resumePlay = function() {        
+            Player.resumePlay();
+        };
+        self.pauseResumePlay = function() {
+            self.current_movie_paused  = ! self.current_movie_paused;
+            Player.pauseResumePlay(self.current_movie_paused);
+        };
+        
+        self.setVolume = function (){
+            
+            Player.setVolume(self.current_movie.volume);
+        };
+        self.backward = function() {
+            Player.backward();
+        };
+        self.forward = function() {
+            Player.forward();
+        };
+        self.fastBackward = function() {
+            Player.fastBackward();
+        };
+        self.fastForward = function() {
+            Player.fastForward();
+        };
+        self.seekPercent = function(e) {
+            if(!self.props.enable_seek) return;
+            var fullProgressBarWidth = $(e.currentTarget).width();
+            var requestedPosition = e.offsetX / fullProgressBarWidth * 100;        
+            $log.log('seek percent: '+requestedPosition);
+            Player.seekPercent(requestedPosition);
+        };
     
-}
+}]
 });
                                     
                                     

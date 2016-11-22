@@ -1,6 +1,6 @@
 'use strict';
 
-var wplayerApp = angular.module('wplayer', ['ui.bootstrap','ngRoute','ngAnimate','current','movies','custom','files.service']);
+var wplayerApp = angular.module('wplayer', ['ui.bootstrap','ngRoute','ngAnimate','current','movies','custom']);
 
 wplayerApp.config (['$routeProvider','$locationProvider',function config($routeProvider,$locationProvider){
                       //  $locationProvider.html5Mode(true);
@@ -35,26 +35,3 @@ wplayerApp.filter('duration', function() {
         return mom.format('HH:mm:ss');
     }
 });
-
-wplayerApp.run(function($rootScope,$location,$log) {
-    $rootScope.ws=new WebSocket("ws://"+$location.host()+":"+$location.port()+"/player");
-    $rootScope.playFile = function(file) {
-        $log.log('playing file '+file.name);
-        $rootScope.ws.send(JSON.stringify({name:'play',link:file.link}));      
-    };
-    $rootScope.current_movie = {};
-    $rootScope.ws.onmessage=function(evt) {
-        //$log.log("received:"+evt.data);        
-        $rootScope.$apply(function(){
-            $rootScope.current_movie = JSON.parse(evt.data);
-            //$log.log("$scope.current_movie:"+$rootScope.current_movie);
-            //$log.log("$scope.current_movie:"+$rootScope.current_movie.file_name);                            
-        });
-    };
-      
-    $rootScope.ws.onopen=function(evt){
-        console.log("openend connection");
-    };
-    
-});
-

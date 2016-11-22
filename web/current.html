@@ -1,39 +1,39 @@
 <div class="row">
     <div class="col-lg-12">
-        Currently playing: {{current_movie.idle?'No movie playing':current_movie.file_name}}
+        Currently playing: {{$ctrl.current_movie.idle?'No movie playing':$ctrl.current_movie.file_name}}
     <div>        
 </div>
-<div class="row" ng-if="!current_movie.idle">
+<div class="row" ng-if="!$ctrl.current_movie.idle">
     <div class="col-lg-6">
-        <uib-progressbar class="progress-striped active" value="current_movie.percent_complete" max="100" ng-click="seekPercent($event)">{{current_movie.percent_complete}}%</uib-progressbar>
+        <uib-progressbar class="progress-striped active" value="$ctrl.current_movie.percent_complete" max="100" ng-click="$ctrl.seekPercent($event)">{{$ctrl.current_movie.percent_complete}}%</uib-progressbar>
     </div>
     <div class="col-lg-6">
-        {{current_movie.time_position|duration}} / {{current_movie.total_duration|duration}}
+        {{$ctrl.current_movie.time_position|duration}} / {{$ctrl.current_movie.total_duration|duration}}
     </div>    
 </div>
-<div class="row" ng-if="!current_movie.idle">
+<div class="row" ng-if="!$ctrl.current_movie.idle">
     <div class="col-lg-6">
         <label title="If checked then clicking on the progress bar will change the movie play time">
-            <input type="checkbox" ng-model="props.enable_seek"> Enable progress bar seek
+            <input type="checkbox" ng-model="$ctrl.props.enable_seek"> Enable progress bar seek
         </label>
     </div>
 </div>
 
-<div class="row" ng-if="!current_movie.idle">
+<div class="row" ng-if="!$ctrl.current_movie.idle">
 
     <div class="col-lg-3">
-        <button class="btn btn-default btn-xs" ng-click="backward()" title="Backward"><i class="fa fa-backward" aria-hidden="true"></i></button>
-        <button class="btn btn-default btn-xs" ng-click="fastBackward()" title="Fast Backward"><i class="fa fa-fast-backward" aria-hidden="true"></i></button>
+        <button class="btn btn-default btn-xs" ng-click="$ctrl.backward()" title="Backward"><i class="fa fa-backward" aria-hidden="true"></i></button>
+        <button class="btn btn-default btn-xs" ng-click="$ctrl.fastBackward()" title="Fast Backward"><i class="fa fa-fast-backward" aria-hidden="true"></i></button>
 
-        <button class="btn btn-default btn-xs" ng-click="pauseResumePlay()" title="Pause/Resume"><i ng-class="current_movie.paused?'fa fa-play':'fa fa-pause'" aria-hidden="true"></i></button>
-        <button class="btn btn-default btn-xs" ng-click="stopPlay()" title="Stop"><i class="fa fa-stop" aria-hidden="true"></i></button>
+        <button class="btn btn-default btn-xs" ng-click="$ctrl.pauseResumePlay()" title="Pause/Resume"><i ng-class="$ctrl.current_movie.paused?'fa fa-play':'fa fa-pause'" aria-hidden="true"></i></button>
+        <button class="btn btn-default btn-xs" ng-click="$ctrl.stopPlay()" title="Stop"><i class="fa fa-stop" aria-hidden="true"></i></button>
 
-        <button class="btn btn-default btn-xs" ng-click="fastForward()" title="Fast Forward"><i class="fa fa-fast-forward" aria-hidden="true"></i></button>
-        <button class="btn btn-default btn-xs" ng-click="forward()" title="Forward"><i class="fa fa-forward" aria-hidden="true"></i></button>
+        <button class="btn btn-default btn-xs" ng-click="$ctrl.fastForward()" title="Fast Forward"><i class="fa fa-fast-forward" aria-hidden="true"></i></button>
+        <button class="btn btn-default btn-xs" ng-click="$ctrl.forward()" title="Forward"><i class="fa fa-forward" aria-hidden="true"></i></button>
     </div>
     <div class="col-lg-5">
         <label for="volume">Volume:</label>
-        <input type="number" name="volume" id="volume" ng-model="current_movie.volume" ng-change="setVolume()">
+        <input type="number" name="volume" id="volume" ng-model="$ctrl.current_movie.volume" ng-change="$ctrl.setVolume()">
     </div>
 </div>
 <div class="row">

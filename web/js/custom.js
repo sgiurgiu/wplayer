@@ -1,16 +1,19 @@
-angular.module('custom',[]);
+angular.module('custom',['player.service']);
 
 angular.module('custom').component('custom',{
     templateUrl:'custom.html',
-    controller: function($scope,$log) {
-	$scope.youtube_id = "";
+    controller: ['$log','Player',function($log,Player) {
+        
+        var self = this;
+        
+	self.youtube_id = "";
 
-	$scope.playYoutube = function(id) {
+	self.playYoutube = function(id) {
             $log.log('youtube id:'+id);
-            $scope.ws.send(JSON.stringify({name:'youtube',value:id}));      
+            Player.playYoutube(id);            
 	};
 
-}
+}]
 });
 
 
