@@ -15,7 +15,3 @@ angular.module('custom').component('custom',{
 
 }]
 });
-
-
-
-
