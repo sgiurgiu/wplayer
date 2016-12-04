@@ -39,3 +39,32 @@
 <div class="row">
     &nbsp;
 </div>
+
+<div class="row" ng-if="!$ctrl.current_movie.idle">
+    <div class="col-lg-12">
+            Subtitles:
+    <div>      
+    <div class="col-lg-12">
+	<table class="table table-condensed">
+		<thead>
+			<td width="1%">ID</td>
+			<td width="25%">Title</td>
+                        <td width="35%">External file</td>
+                        <td width="15%"></td>
+		</thead>
+		<tbody>
+			<tr ng-repeat="sub in $ctrl.subs" ng-class="{info: sub.selected}">
+				<td>{{sub.id}}</td>
+				<td>                                        
+                                    {{sub.title}}
+				</td>
+                                <td>{{sub["external-filename"]}}</td>
+                                <td>
+                                        <button ng-if="sub.selected" class="btn btn-danger pull-right" ng-click="$ctrl.removeSub(sub.id)"><i class="fa fa-times" aria-hidden="true"></i></button>
+                                </td>
+			</tr>
+		</tbody>
+	</table>
+        
+    <div>      
+</div>

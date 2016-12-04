@@ -22,6 +22,7 @@ player_service::player_service(const http_config &config):done_polling(false),mp
     handlers_map["fast-backward"]=std::bind(&player_service::fast_backward_command,this,_1);
     handlers_map["seek-percent"]=std::bind(&player_service::seek_percent_command,this,_1);
     handlers_map["youtube"]=std::bind(&player_service::play_youtube_command,this,_1);  
+    handlers_map["remove-sub"]=std::bind(&player_service::remove_sub_command,this,_1);  
     
     setup_polling_thread();
 }
@@ -40,9 +41,10 @@ void player_service::setup_polling_thread()
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(2s);
             std::lock_guard<std::mutex> lock(mtx);
+            mpv_status status = mpv->get_mpv_status();
             for(auto con: connections)
             {
-                report_status(con);
+                report_status(con,status);
             }
         }
     });
@@ -52,7 +54,8 @@ void player_service::add_connection(crow::websocket::connection* connection)
 {
     std::lock_guard<std::mutex> lock(mtx);
     connections.insert(connection);
-    report_status(connection);
+    mpv_status status = mpv->get_mpv_status();
+    report_status(connection,status);
 }
 void player_service::remove_connection(crow::websocket::connection* connection)
 {
@@ -60,9 +63,8 @@ void player_service::remove_connection(crow::websocket::connection* connection)
     connections.erase(connection);
 }
 
-void player_service::report_status(crow::websocket::connection* connection)
-{
-    mpv_status status = mpv->get_mpv_status();
+void player_service::report_status(crow::websocket::connection* connection,mpv_status& status)
+{    
     picojson::object status_obj;
     status_obj.insert({"file_size",picojson::value((int64_t)status.file_size)});
     status_obj.insert({"idle",picojson::value(status.idle)});
@@ -73,6 +75,7 @@ void player_service::report_status(crow::websocket::connection* connection)
     status_obj.insert({"volume",picojson::value(status.audio_volume)});
     status_obj.insert({"paused",picojson::value(status.paused)});
     status_obj.insert({"seekable",picojson::value(status.seekable)});
+    status_obj.insert({"tracks",status.tracks});
     
     connection->send_text(picojson::value(status_obj).serialize());    
 }
@@ -149,6 +152,25 @@ void player_service::play_command(const picojson::value& val)
             mpv->play(file_to_play.string());
         }        
     }
+}
+void player_service::remove_sub_command(const picojson::value& val)
+{
+    auto sub_id = val.get("value");
+    int64_t id = 0;
+    if(sub_id.is<double>())
+    {
+        id = (int64_t)sub_id.get<double>();
+    }
+    else if(sub_id.is<int64_t>())
+    {
+        id = sub_id.get<int64_t>();
+    }
+    else 
+    {
+        id = std::stol(sub_id.get<std::string>());
+    }
+    
+    mpv->remove_sub(id);
 }
 
 void player_service::stop_command(const picojson::value&)

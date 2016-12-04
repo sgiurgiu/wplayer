@@ -7,15 +7,27 @@ angular.module('current').component('current',{
         var self = this;
         self.current_movie = {};
         self.current_movie_paused = false;
+        self.subs = [];
         
         $scope.$watch(function(){return Player.getCurrentMovie();},function(newValue,oldValue){
             $log.log('self$wattch current movie '+JSON.stringify(newValue));
                 self.current_movie = newValue;
+                if(newValue.tracks != null) {
+                    self.subs = [];
+                    for(var i=0;i<newValue.tracks.length;i++) {
+                        if(newValue.tracks[i].type === 'sub') {
+                            self.subs.push(newValue.tracks[i]);
+                        }
+                    }
+                }
         });
         
-        self.props = {
-            
+        self.props = {            
                 enable_seek:false
+        };
+        
+        self.removeSub = function(id) {
+            Player.removeSub(id);
         };
         
         self.stopPlay = function() {        

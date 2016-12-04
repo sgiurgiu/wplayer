@@ -25,7 +25,7 @@ namespace crow
     }
 }
 class mpv_manager;
-
+struct mpv_status;
 class player_service
 {
 public:   
@@ -47,10 +47,11 @@ private:
     void forward_command(const picojson::value&);
     void fast_forward_command(const picojson::value&);
     void backward_command(const picojson::value&);
+    void remove_sub_command(const picojson::value& val);
     void fast_backward_command(const picojson::value&);
     void setup_ws_server();
     void setup_polling_thread();
-    void report_status(crow::websocket::connection* connection);
+    void report_status(crow::websocket::connection* connection,mpv_status& status);
 private:    
     std::atomic_bool done_polling;    
     std::unique_ptr<mpv_manager> mpv;

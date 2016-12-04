@@ -50,7 +50,10 @@ angular.module('player.service').factory('Player',['$location','$log','$rootScop
         },
 	playYoutube : function(id) {                        
             self.ws.send(JSON.stringify({name:'youtube',value:id}));      
-	}        
+	},
+        removeSub : function(id) {
+            self.ws.send(JSON.stringify({name:'remove-sub',value:id}));      
+        }
         
     };
     
@@ -60,8 +63,7 @@ angular.module('player.service').factory('Player',['$location','$log','$rootScop
         //$log.log("received:"+evt.data);        
         $rootScope.$apply(function(){
             service.setCurrentMovie(JSON.parse(evt.data));
-            $log.log("$scope.current_movie:"+self.current_movie);
-            $log.log("$scope.current_movie:"+self.current_movie.file_name);                            
+            $log.log("$scope.current_movie:"+JSON.stringify(service.getCurrentMovie()));            
         });
     };
       

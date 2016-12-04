@@ -100,7 +100,7 @@ mpv_manager::mpv_manager(const http_config& config)
 }
 mpv_manager::~mpv_manager() = default;
 
-std::string mpv_manager::create_metadata_object(mpv_node* metadata)
+std::string mpv_manager::create_metadata_object(mpv_node* metadata) const
 {
         if(metadata->format != MPV_FORMAT_NODE_MAP)
         {
@@ -117,15 +117,15 @@ std::string mpv_manager::create_metadata_object(mpv_node* metadata)
         picojson::value val(metadata_object);
         return val.serialize();
 }
-picojson::value mpv_manager::create_node_json_value(const mpv_node& node)
+picojson::value mpv_manager::create_node_json_value(const mpv_node& node)  const
 {    
-    LOG4CPLUS_DEBUG(logger, "Metadata node format : "<< node.format);
+    //LOG4CPLUS_DEBUG(logger, "Metadata node format : "<< node.format);
     switch(node.format)
     {
         case MPV_FORMAT_STRING:
             return picojson::value(node.u.string);
         case MPV_FORMAT_FLAG:
-            return picojson::value((int64_t)node.u.flag);
+            return picojson::value((bool)(node.u.flag==1));
         case MPV_FORMAT_DOUBLE:
             return picojson::value(node.u.double_);
         case MPV_FORMAT_INT64:
@@ -139,7 +139,7 @@ picojson::value mpv_manager::create_node_json_value(const mpv_node& node)
     }
     return picojson::value();
 }
-picojson::array mpv_manager::create_node_json_array(const mpv_node& node)
+picojson::array mpv_manager::create_node_json_array(const mpv_node& node) const
 {
     picojson::array array;
     mpv_node_list* list = node.u.list;
@@ -149,7 +149,7 @@ picojson::array mpv_manager::create_node_json_array(const mpv_node& node)
     }    
     return array;
 }
-picojson::object mpv_manager::create_node_json_map(const mpv_node& node)
+picojson::object mpv_manager::create_node_json_map(const mpv_node& node) const
 {
     picojson::object obj;
     mpv_node_list* list = node.u.list;
@@ -225,6 +225,12 @@ void mpv_manager::seek_percent(double percent)
     const char* cmd[] = {"seek", std::to_string(percent).c_str(), "absolute-percent",nullptr};
     mpv_command(handle.get(),cmd);    
 }
+void mpv_manager::remove_sub(int64_t id)
+{
+    const char* cmd[] = {"sub-remove", std::to_string(id).c_str(), nullptr};
+    mpv_command(handle.get(),cmd);    
+}
+
 mpv_status mpv_manager::get_mpv_status() const
 {
     mpv_status status;
@@ -239,6 +245,17 @@ mpv_status mpv_manager::get_mpv_status() const
     mpv_get_property(handle.get(),"volume",MPV_FORMAT_DOUBLE,&status.audio_volume);   
     mpv_get_property(handle.get(),"seekable",MPV_FORMAT_FLAG,&status.seekable);
     mpv_get_property(handle.get(),"pause",MPV_FORMAT_FLAG,&status.paused);
+    mpv_node tracks;
+    mpv_get_property(handle.get(),"track-list",MPV_FORMAT_NODE,&tracks);
+    status.tracks = create_node_json_value(tracks);
+    LOG4CPLUS_DEBUG(logger,"tracks list:"<<status.tracks.serialize());
+    /*for(int64_t i = 0;i<tracks_count;++i)
+    {
+        int64_t id = 0;
+        mpv_get_property(handle.get(),"track-list/count",MPV_FORMAT_INT64,&tracks_count);
+        track-list/N/id
+    }
+    */
     //seekable
     //pause
     return status;

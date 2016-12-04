@@ -10,8 +10,9 @@
 #include <log4cplus/loggingmacros.h>
 #include <log4cplus/configurator.h>
 
-
 #include <boost/filesystem.hpp>
+
+void setup_routes(crow::SimpleApp& app,file_controller& files,files_listing_controller& files_listing,player_service& ps);
 
 int main(int argc, char** argv)
 { 
@@ -47,14 +48,27 @@ int main(int argc, char** argv)
         logConfig.configure();
     }    
     log4cplus::Logger logger = log4cplus::Logger::getRoot();    
-
+    
+    crow::SimpleApp app;
     file_controller files(config.http_server.files_folder);
     files_listing_controller files_listing(config);
     player_service ps(config);    
-
-    crow::SimpleApp app;
-        
    
+    setup_routes(app,files,files_listing,ps);
+
+    if(commandLineOptions.daemon)
+    {
+       // daemon(0,0);
+    }
+    
+    app.port(config.http_server.port).bindaddr(config.http_server.bind_address).multithreaded().run();
+
+    
+    return 0;
+}
+
+void setup_routes(crow::SimpleApp& app,file_controller& files,files_listing_controller& files_listing,player_service& ps)
+{
     CROW_ROUTE(app,"/player")
     .websocket()
     .onopen([&ps](crow::websocket::connection& conn) {
@@ -81,7 +95,7 @@ int main(int argc, char** argv)
     ([&files]() {
         return files.get_file_contents("index.html");
     });
-    CROW_ROUTE(app,"/movies/")
+    CROW_ROUTE(app,"/movies")
     .methods("GET"_method)
     ([&files]() {
         return files.get_file_contents("index.html");
@@ -101,15 +115,5 @@ int main(int argc, char** argv)
     .methods("GET"_method)
     ([&files]() {
         return files.get_file_contents("index.html");
-    });
-
-    if(commandLineOptions.daemon)
-    {
-       // daemon(0,0);
-    }
-    
-    app.port(config.http_server.port).bindaddr(config.http_server.bind_address).multithreaded().run();
-
-    
-    return 0;
+    });    
 }
