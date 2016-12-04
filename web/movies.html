@@ -4,7 +4,12 @@
 	<p ng-if="cur_dir">Current directory: {{$ctrl.cur_dir}}</p>
     </div>
 </div>
-<div class="row">
+<div class="row" ng-if="$ctrl.loading">
+    <div class="col-md-1 col-md-offset-5">
+        <i  class="fa fa-spinner fa-spin fa-5x pull-center" aria-hidden="true"></i>
+    </div>
+</div>
+<div class="row" ng-if="!$ctrl.loading">
     <div class="col-md-12">
 	<table class="table table-condensed">
 		<thead>
@@ -17,8 +22,8 @@
 			<tr ng-repeat="file in $ctrl.files_list">
 				<td>{{$index+1}}</td>
 				<td>
-					<i class="fa {{file.type==='dir'?'fa-folder':'fa-file'}}"></i>
-                                        <a ng-if="file.type==='dir'" href="#!/movies/{{file.link}}">{{file.name}}</a>
+					<i class="fa {{file.type==='dir'?'fa-folder':(file.type==='updir'?'fa-level-up':'fa-file')}}"></i>
+                                        <a ng-if="file.type==='dir' || file.type==='updir'" href="#!/movies/{{file.link}}">{{file.name}}</a>
                                         <span ng-if="file.type==='file'">{{file.name}}</span>
 				</td>
                                 <td>{{(file.type==='file'?file.size:'')|bytes}}</td>

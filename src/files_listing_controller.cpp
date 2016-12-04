@@ -107,7 +107,7 @@ crow::response files_listing_controller::get(const std::string& path) const
     json_parent_object.insert({"name",picojson::value("..")});
     json_parent_object.insert({"link",picojson::value(link)});
     json_parent_object.insert({"size",picojson::value((int64_t)0)});
-    json_parent_object.insert({"type",picojson::value("dir")});            
+    json_parent_object.insert({"type",picojson::value("updir")});            
     json_parent_object.insert({"parent",picojson::value(true)});
     files_list.push_back(picojson::value(json_parent_object));
         
