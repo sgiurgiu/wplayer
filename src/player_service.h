@@ -1,7 +1,7 @@
 #ifndef PLAYER_SERVICE_H
 #define PLAYER_SERVICE_H
 
-#include "http_config.h"
+#include "database.h"
 
 #include <memory>
 #include <string>
@@ -29,7 +29,7 @@ struct mpv_status;
 class player_service
 {
 public:   
-    player_service(const http_config& config);
+    player_service(database* db);
     ~player_service();
     void start();
     void stop();
@@ -55,7 +55,7 @@ private:
 private:    
     std::atomic_bool done_polling;    
     std::unique_ptr<mpv_manager> mpv;
-    folders multimedia_folders;
+    database* db;
     log4cplus::Logger logger;
     using message_handler = std::function<void(const picojson::value& val)>;
     std::map<std::string,message_handler> handlers_map;    

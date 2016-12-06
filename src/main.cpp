@@ -5,14 +5,16 @@
 #include "crow/crow_all.h"
 #include "player_service.h"
 #include "options_parser.h"
+#include "database.h"
+#include "sets_controller.h"
 
 #include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
 #include <log4cplus/configurator.h>
-
 #include <boost/filesystem.hpp>
 
-void setup_routes(crow::SimpleApp& app,file_controller& files,files_listing_controller& files_listing,player_service& ps);
+
+void setup_routes(crow::SimpleApp& app,file_controller& files,files_listing_controller& files_listing,player_service& ps,sets_controller& sets);
 
 int main(int argc, char** argv)
 { 
@@ -50,15 +52,17 @@ int main(int argc, char** argv)
     log4cplus::Logger logger = log4cplus::Logger::getRoot();    
     
     crow::SimpleApp app;
+    database db;
     file_controller files(config.http_server.files_folder);
-    files_listing_controller files_listing(config);
-    player_service ps(config);    
+    files_listing_controller files_listing(&db);
+    player_service ps(&db);    
+    sets_controller sets(&db);
    
-    setup_routes(app,files,files_listing,ps);
+    setup_routes(app,files,files_listing,ps,sets);
 
     if(commandLineOptions.daemon)
     {
-       // daemon(0,0);
+        daemon(0,0);
     }
     
     app.port(config.http_server.port).bindaddr(config.http_server.bind_address).multithreaded().run();
@@ -67,7 +71,7 @@ int main(int argc, char** argv)
     return 0;
 }
 
-void setup_routes(crow::SimpleApp& app,file_controller& files,files_listing_controller& files_listing,player_service& ps)
+void setup_routes(crow::SimpleApp& app,file_controller& files,files_listing_controller& files_listing,player_service& ps,sets_controller& sets)
 {
     CROW_ROUTE(app,"/player")
     .websocket()
@@ -89,6 +93,21 @@ void setup_routes(crow::SimpleApp& app,file_controller& files,files_listing_cont
     ([&files_listing](){
         return files_listing.get_sets();
     });    
+    CROW_ROUTE(app,"/api/sets")
+    .methods("GET"_method,"POST"_method)
+    ([&sets](const crow::request& req) {
+        if(req.method == crow::HTTPMethod::Post)
+        {
+            return sets.add_set(req);
+        }
+        
+        return sets.get_sets();
+    });
+    CROW_ROUTE(app,"/api/sets/<string>")
+    .methods("DELETE"_method)
+    ([&sets](const std::string& name) {
+        return sets.delete_set(name);
+    });
     
     CROW_ROUTE(app,"/current")
     .methods("GET"_method)
@@ -101,6 +120,11 @@ void setup_routes(crow::SimpleApp& app,file_controller& files,files_listing_cont
         return files.get_file_contents("index.html");
     });
     CROW_ROUTE(app,"/custom")
+    .methods("GET"_method)
+    ([&files]() {
+        return files.get_file_contents("index.html");
+    });
+    CROW_ROUTE(app,"/settings")
     .methods("GET"_method)
     ([&files]() {
         return files.get_file_contents("index.html");

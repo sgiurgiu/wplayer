@@ -15,7 +15,7 @@ using namespace boost::filesystem;
 
 log4cplus::Logger files_listing_controller::logger(log4cplus::Logger::getInstance("files_listing_controller"));
 
-files_listing_controller::files_listing_controller(const http_config& config):multimedia_folders(config.multimedia_folders)
+files_listing_controller::files_listing_controller(database* db):db(db)
 {
 }
 files_listing_controller::~files_listing_controller() = default;
@@ -27,6 +27,7 @@ crow::response files_listing_controller::get_sets() const
     picojson::value::object json_sets;
     json_sets.insert({"cur_dir",picojson::value()});
     picojson::value::array files_list;
+    auto multimedia_folders = db->get_multimedia_sets();
     for(const auto& entry: multimedia_folders)
     {
         std::string name = entry.first;
@@ -68,10 +69,18 @@ crow::response files_listing_controller::get(const std::string& path) const
     {
         boost::filesystem::path base_folder;
         for(const auto& path : working_folder)
-        {
-            if(base_folder.empty() && multimedia_folders.find(path.string()) != multimedia_folders.end())
+        {            
+            if(base_folder.empty())
             {
-                base_folder /= multimedia_folders.at(path.string());
+                auto folder = db->get_target_multimedia_folder(path.string());
+                if(!folder.empty())
+                {
+                    base_folder /= folder;
+                }
+                else
+                {
+                    continue;
+                }
             }
             else
             {
@@ -79,16 +88,27 @@ crow::response files_listing_controller::get(const std::string& path) const
             }
             LOG4CPLUS_DEBUG(logger, "path "<<path.string()<<" and base folder:"<<base_folder);    
         }
-        base_folder = canonical(base_folder);
-        LOG4CPLUS_DEBUG(logger, "List folder of  "<<base_folder);
-        if(exists(base_folder) || is_directory(base_folder))
+        if(boost::filesystem::exists(base_folder) && boost::filesystem::is_directory(base_folder))
         {
-            copy(directory_iterator(base_folder), directory_iterator(),std::back_inserter(dir_entries));
+            base_folder = canonical(base_folder);
+            LOG4CPLUS_DEBUG(logger, "List folder of  "<<base_folder);
+            if(exists(base_folder) || is_directory(base_folder))
+            {
+                copy(directory_iterator(base_folder), directory_iterator(),std::back_inserter(dir_entries));
+            }
+        }
+        else
+        {
+            crow::response rsp;
+            rsp.code = 404;
+            rsp.set_header("Content-Type","text/plain");
+            rsp.write("Not found");
+            return rsp;            
         }
     }
     catch(const filesystem_error& ex)
     {
-        std::cout << ex.what() << std::endl;
+        std::cout << ex.what() << std::endl;        
     }
 
     std::sort(dir_entries.begin(), dir_entries.end(),[](const boost::filesystem::path& p1,const boost::filesystem::path& p2){

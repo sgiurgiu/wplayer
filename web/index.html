@@ -38,7 +38,7 @@
           </ul>
 
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="#"><i class="fa fa-gear"></i> Settings</a></li>
+            <li ng-class="settings_active"><a href="#!/settings"><i class="fa fa-gear"></i> Settings</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -66,7 +66,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-route.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-resource.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.2/moment.min.js"></script>    
-    <script src="js/ui-bootstrap-tpls-2.1.4.min.js"></script>
+    <script src="js/ui-bootstrap-tpls-2.3.0.min.js"></script>
     
     <script src="/js/wplayer.js"></script>
     <script src="/js/files.service.js"></script>
@@ -74,7 +74,10 @@
     <script src="/js/current.js"></script>
     <script src="/js/movies.js"></script>
     <script src="/js/custom.js"></script>
-    
+    <script src="/js/settings.js"></script>
+    <script src="/js/settings_multimedia_sets.js"></script>
+    <script src="/js/settings_advanced.js"></script>
+    <script src="/js/sets.service.js"></script>
     
     <!-- Latest compiled and minified JavaScript -->
     

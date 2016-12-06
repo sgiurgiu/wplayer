@@ -11,6 +11,8 @@ angular.module('movies').component('movies', {
             self.cur_dir = data.cur_dir;
             self.files_list = data.files;
             $log.log('got files '+data);                
+        }, function(error){
+            self.loading = false;   
         });
 
 	self.playFile = function(file) {

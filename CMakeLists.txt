@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.4)
 project(wplayer)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-add_definitions(-std=c++14 -Wall -pedantic -Wextra -DBOOST_ALL_DYN_LINK)
+add_definitions(-std=c++1y -Wall -pedantic -Wextra -DBOOST_ALL_DYN_LINK)
 
 set(Boost_USE_STATIC_LIBS        ON)
 set(Boost_USE_MULTITHREADED      ON)
@@ -15,7 +15,9 @@ find_library(LOG4CPLUS_LIBS log4cplus)
 
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}:/usr/local/lib/pkgconfig/")
 find_package(PkgConfig REQUIRED)
-pkg_search_module(MPV REQUIRED /usr/local/lib/pkgconfig/mpv.pc)
+pkg_search_module(MPV REQUIRED mpv)
+pkg_search_module(SQLITE REQUIRED sqlite3)
+
 
 include(GNUInstallDirs)
 
@@ -36,7 +38,9 @@ set(SOURCE_FILES src/main.cpp
               src/not_found_exception.cpp
               src/utils.cpp
               src/player_service.cpp
-              src/options_parser.cpp)
+              src/options_parser.cpp
+              src/database.cpp
+              src/sets_controller.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
@@ -50,6 +54,9 @@ target_link_libraries(${PROJECT_NAME} ${UCHARDET_LIB})
 
 target_link_libraries(${PROJECT_NAME} pthread)
 target_compile_options(${PROJECT_NAME} PUBLIC ${MPV_CFLAGS_OTHER})
+target_link_libraries(${PROJECT_NAME} ${SQLITE_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PUBLIC ${SQLITE_INCLUDE_DIRS})
+target_compile_options(${PROJECT_NAME} PUBLIC ${SQLITE_CFLAGS_OTHER})
 
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)

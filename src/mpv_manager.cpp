@@ -1,5 +1,4 @@
 #include "mpv_manager.h"
-
 #include <log4cplus/loggingmacros.h>
 #include <iostream>
 #include <thread>
@@ -34,19 +33,18 @@ public:
     }
 };
 #include <string.h>
-mpv_manager::mpv_manager(const http_config& config)
+mpv_manager::mpv_manager(database* db)
     :handle(mpv_create(),mpv_handle_deleter()),logger(log4cplus::Logger::getInstance("mpv_manager"))
 {
     //const char* env = "DISPLAY=:0";
-    for(const auto& env : config.environment)
+    for(const auto& env : db->get_environment())
     {
         putenv((char*)env.c_str());
     }
-    
-    
-    for(const auto& pair : config.player_properties)
+        
+    for(const auto& pair : db->get_player_properties())
     {
-        boost::apply_visitor(mpv_option_visitor(pair.first,handle.get()),pair.second);
+        mpv_set_option_string(handle.get(), pair.first.c_str(), pair.second.c_str());        
     }
 
     //mpv_set_option_string(handle.get(),"no-input-default-bindings","");

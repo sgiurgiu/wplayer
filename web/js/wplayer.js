@@ -1,6 +1,6 @@
 'use strict';
 
-var wplayerApp = angular.module('wplayer', ['ui.bootstrap','ngRoute','ngAnimate','current','movies','custom']);
+var wplayerApp = angular.module('wplayer', ['ui.bootstrap','ngRoute','ngAnimate','current','movies','custom','settings']);
 
 wplayerApp.config (['$routeProvider','$locationProvider',function config($routeProvider,$locationProvider){
                       //  $locationProvider.html5Mode(true);
@@ -15,6 +15,8 @@ wplayerApp.config (['$routeProvider','$locationProvider',function config($routeP
                                 template : '<movies></movies>'                        
                         }).when('/custom',{
                                 template : '<custom></custom>'
+                        }).when('/settings',{
+                                template : '<settings></settings>'
                         }).otherwise('/movies');
                 }
         ]);

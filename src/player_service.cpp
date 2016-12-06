@@ -7,7 +7,7 @@
 #include <chrono>
 #include "crow/crow_all.h"
 
-player_service::player_service(const http_config &config):done_polling(false),mpv(new mpv_manager(config)),multimedia_folders(config.multimedia_folders),
+player_service::player_service(database* db):done_polling(false),mpv(new mpv_manager(db)),db(db),
                                                     logger(log4cplus::Logger::getInstance("player_service"))
 {
     using namespace std::placeholders;   
@@ -141,10 +141,10 @@ void player_service::play_command(const picojson::value& val)
     {
         path_to_file /= *path_it;
     }
-    
-    if(multimedia_folders.find(set_path.string()) != multimedia_folders.end())
+    auto set_folder = db->get_target_multimedia_folder(set_path.string());
+    if(!set_folder.empty())
     {        
-        boost::filesystem::path file_to_play(multimedia_folders.at(set_path.string()));
+        boost::filesystem::path file_to_play(set_folder);
         file_to_play /= path_to_file;
         LOG4CPLUS_DEBUG(logger, "Playing "<<file_to_play);
         if(exists(file_to_play))
