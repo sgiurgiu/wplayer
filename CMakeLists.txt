@@ -13,7 +13,7 @@ find_library(MAGIC_LIB magic)
 find_library(UCHARDET_LIB uchardet)
 find_library(LOG4CPLUS_LIBS log4cplus)
 
-set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}:/usr/local/lib/pkgconfig/")
+set( ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/usr/local/lib/pkgconfig" )
 find_package(PkgConfig REQUIRED)
 pkg_search_module(MPV REQUIRED mpv)
 pkg_search_module(SQLITE REQUIRED sqlite3)
@@ -62,7 +62,8 @@ target_compile_options(${PROJECT_NAME} PUBLIC ${SQLITE_CFLAGS_OTHER})
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 
 set(CPACK_RPM_RELOCATION_PATHS "/${CMAKE_INSTALL_SYSCONFDIR}" "${CMAKE_INSTALL_BINDIR}")
-
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0) # don't prepend package name
+set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 
 install(DIRECTORY "web/"
   DESTINATION "/var/www/html/wplayer")
@@ -91,7 +92,7 @@ SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Web MPV")
 SET(CPACK_PACKAGE_VENDOR "Sergiu Giurgiu")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Web MPV")
 SET(CPACK_PACKAGE_CONTACT "sgiurgiu11@gmail.com")
-SET(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST "/var" "/var/www" "/var/www/html" "/etc" "/etc/systemd" "/etc/systemd/system" "/usr" "/usr/bin" "/etc/systemd/user")
+SET(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST "/var" "/var/www" "/var/www/html" "/etc" "/etc/systemd" "/etc/systemd/system" "/usr" "/usr/bin" "/etc/systemd/user" "/usr/local" "/usr/local/bin")
 
 SET(CPACK_PACKAGE_VERSION_MAJOR 0)
 SET(CPACK_PACKAGE_VERSION_MINOR 1)
