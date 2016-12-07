@@ -3,4 +3,6 @@ build/
 .kdev4/
 CMakeLists.txt.user
 *.log
+*~
+*.swp
 
