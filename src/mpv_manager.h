@@ -2,7 +2,7 @@
 #define MPV_MANAGER_H
 
 #include "picojson.h"
-#include "database.h"
+#include "http_config.h"
 #include <string>
 #include <memory>
 #include <mpv/client.h>
@@ -31,7 +31,7 @@ struct mpv_status
 class mpv_manager
 {
 public:
-    mpv_manager(database* db);
+    mpv_manager(const http_config& config);
     ~mpv_manager();
     void play(const std::string& path);
     void play_youtube(const std::string& youtube_url);

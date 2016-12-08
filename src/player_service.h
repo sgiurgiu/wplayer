@@ -2,7 +2,7 @@
 #define PLAYER_SERVICE_H
 
 #include "database.h"
-
+#include "http_config.h"
 #include <memory>
 #include <string>
 #include <functional>
@@ -29,7 +29,7 @@ struct mpv_status;
 class player_service
 {
 public:   
-    player_service(database* db);
+    player_service(const http_config& config,database* db);
     ~player_service();
     void start();
     void stop();

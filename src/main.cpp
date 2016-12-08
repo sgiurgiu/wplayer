@@ -55,7 +55,7 @@ int main(int argc, char** argv)
     database db;
     file_controller files(config.http_server.files_folder);
     files_listing_controller files_listing(&db);
-    player_service ps(&db);    
+    player_service ps(config,&db);    
     sets_controller sets(&db);
    
     setup_routes(app,files,files_listing,ps,sets);

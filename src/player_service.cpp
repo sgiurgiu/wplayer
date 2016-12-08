@@ -7,7 +7,7 @@
 #include <chrono>
 #include "crow/crow_all.h"
 
-player_service::player_service(database* db):done_polling(false),mpv(new mpv_manager(db)),db(db),
+player_service::player_service(const http_config& config,database* db):done_polling(false),mpv(new mpv_manager(config)),db(db),
                                                     logger(log4cplus::Logger::getInstance("player_service"))
 {
     using namespace std::placeholders;   
