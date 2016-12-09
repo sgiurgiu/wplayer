@@ -4,7 +4,7 @@ After=network.target graphical.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/wplayer -d -c /etc/wplayer/wplayer.conf -l /etc/wplayer/log.conf
+ExecStart=/usr/bin/wplayer -c /etc/wplayer/wplayer.conf -l /etc/wplayer/log.conf
 User=%i
 Group=users
 Restart=on-abort
