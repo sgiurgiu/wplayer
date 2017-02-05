@@ -1,14 +1,34 @@
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-6">
 	<h4>Files Listing</h4>
-	<p ng-if="cur_dir">Current directory: {{$ctrl.cur_dir}}</p>
+	<div ng-if="$ctrl.cur_dir">Current directory: {{$ctrl.cur_dir}}</div>
     </div>
+    <div class="col-md-6">
+        
+            <div class="form-group">            
+                <div class="input-group col-sm-12">
+                    <input type="search" ng-model="$ctrl.searchText" class="form-control" placeholder="Search" aria-describedby="searchIcon">                    
+                    <span class="form-control-feedback" aria-hidden="true"><i class="fa fa-search" aria-hidden="true"></i></span>
+                    <span class="sr-only" id="searchIcon">(search)</span>
+                </div>
+            </div>
+        
+    </div>
+    
 </div>
 <div class="row" ng-if="$ctrl.loading">
     <div class="col-md-1 col-md-offset-5">
         <i  class="fa fa-spinner fa-spin fa-5x pull-center" aria-hidden="true"></i>
     </div>
 </div>
+<div class="row" ng-if="!$ctrl.loading && $ctrl.playStartedSuccess">
+<div class="col-md-12">
+    <div class="alert alert-info">
+        <button type="button" class="close" data-ng-click="$ctrl.closeMessage()">×</button>Play started</div>
+    </div>
+</div>    
+</div>
+
 <div class="row" ng-if="!$ctrl.loading">
     <div class="col-md-12">
 	<table class="table table-condensed">
@@ -19,7 +39,7 @@
                         <td width="15%"></td>
 		</thead>
 		<tbody>
-			<tr ng-repeat="file in $ctrl.files_list">
+			<tr ng-repeat="file in $ctrl.files_list|filter:$ctrl.searchText">
 				<td>{{$index+1}}</td>
 				<td>
 					<i class="fa {{file.type==='dir'?'fa-folder':(file.type==='updir'?'fa-level-up':'fa-file')}}"></i>
