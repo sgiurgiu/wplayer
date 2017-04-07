@@ -14,24 +14,24 @@ file_controller::file_controller(const std::string& dir):base_dir(dir),magic(std
 }
 file_controller::~file_controller() = default;  
 
-crow::response file_controller::get_file_contents(const std::string& file)
+std::unique_ptr<crow::response> file_controller::get_file_contents(const std::string& file)
 {
     
-    crow::response rsp;
+    std::unique_ptr<crow::response> rsp = std::make_unique<crow::response>();
     try
     {
         std::string file_name = get_file(file).string();
         std::ifstream in (file_name);   
-        rsp.code = 200;
+        rsp->code = 200;
         std::string contents = (static_cast<std::stringstream const&>(std::stringstream() << in.rdbuf()).str());
-        rsp.set_header("Content-Length",std::to_string(contents.length()));        
+        rsp->set_header("Content-Length",std::to_string(contents.length()));        
         std::string mime = get_mime_type(file_name);        
-        rsp.set_header("Content-Type",mime);
-        rsp.write(contents);
+        rsp->set_header("Content-Type",mime);
+        rsp->write(contents);
     }catch(const not_found_exception& ex) 
     {
-        rsp.code = 404;
-        rsp.write(ex.what());
+        rsp->code = 404;
+        rsp->write(ex.what());
     }
     //rsp.end();
     return rsp;

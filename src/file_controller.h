@@ -18,7 +18,7 @@ class file_controller
 public:
     file_controller(const std::string& dir);
     ~file_controller();
-    crow::response get_file_contents(const std::string& file);
+    std::unique_ptr<crow::response> get_file_contents(const std::string& file);
     
 private:
     std::string get_mime_type(const std::string& file);

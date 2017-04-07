@@ -87,57 +87,56 @@ void setup_routes(crow::SimpleApp& app,file_controller& files,files_listing_cont
     
     CROW_ROUTE(app,"/api/files/<path>")
     ([&files_listing](const std::string& path){
-        return files_listing.get(path);        
+        return std::move(*files_listing.get(path));
     });      
     CROW_ROUTE(app,"/api/files")        
     ([&files_listing](){
-        return files_listing.get_sets();
+        return std::move(*files_listing.get_sets());
     });    
     CROW_ROUTE(app,"/api/sets")
     .methods("GET"_method,"POST"_method)
     ([&sets](const crow::request& req) {
         if(req.method == crow::HTTPMethod::Post)
         {
-            return sets.add_set(req);
+            return std::move(*sets.add_set(req));
         }
-        
-        return sets.get_sets();
+        return std::move(*sets.get_sets());
     });
     CROW_ROUTE(app,"/api/sets/<string>")
     .methods("DELETE"_method)
     ([&sets](const std::string& name) {
-        return sets.delete_set(name);
+        return std::move(*sets.delete_set(name));
     });
     
     CROW_ROUTE(app,"/current")
     .methods("GET"_method)
     ([&files]() {
-        return files.get_file_contents("index.html");
+        return std::move(*files.get_file_contents("index.html"));
     });
     CROW_ROUTE(app,"/movies")
     .methods("GET"_method)
     ([&files]() {
-        return files.get_file_contents("index.html");
+        return std::move(*files.get_file_contents("index.html"));
     });
     CROW_ROUTE(app,"/custom")
     .methods("GET"_method)
     ([&files]() {
-        return files.get_file_contents("index.html");
+        return std::move(*files.get_file_contents("index.html"));
     });
     CROW_ROUTE(app,"/settings")
     .methods("GET"_method)
     ([&files]() {
-        return files.get_file_contents("index.html");
+        return std::move(*files.get_file_contents("index.html"));
     });
 
     CROW_ROUTE(app,"/<path>")
     .methods("GET"_method)
     ([&files](const std::string& path) {
-        return files.get_file_contents(path);
+        return std::move(*files.get_file_contents(path));
     });
     CROW_ROUTE(app,"/")
     .methods("GET"_method)
     ([&files]() {
-        return files.get_file_contents("index.html");
+        return std::move(*files.get_file_contents("index.html"));
     });    
 }

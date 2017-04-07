@@ -21,7 +21,7 @@ files_listing_controller::files_listing_controller(database* db):db(db)
 files_listing_controller::~files_listing_controller() = default;
 
 
-crow::response files_listing_controller::get_sets() const
+std::unique_ptr<crow::response> files_listing_controller::get_sets() const
 {
     LOG4CPLUS_DEBUG(logger, "Serving sets");
     picojson::value::object json_sets;
@@ -48,15 +48,15 @@ crow::response files_listing_controller::get_sets() const
     }
     json_sets.insert({"files",picojson::value(files_list)});
     
-    crow::response rsp;
-    rsp.code = 200;
-    rsp.set_header("Content-Type","application/json; charset=UTF-8");
+    std::unique_ptr<crow::response> rsp = std::make_unique<crow::response>();
+    rsp->code = 200;
+    rsp->set_header("Content-Type","application/json; charset=UTF-8");
     picojson::value sets_value(json_sets);
-    rsp.write(sets_value.serialize());
+    rsp->write(sets_value.serialize());
     return rsp;    
 }
 
-crow::response files_listing_controller::get(const std::string& path) const
+std::unique_ptr<crow::response> files_listing_controller::get(const std::string& path) const
 {    
     LOG4CPLUS_DEBUG(logger, "Serving path "<<path);    
     std::string decoded_path = utils::decode(path);        
@@ -99,10 +99,10 @@ crow::response files_listing_controller::get(const std::string& path) const
         }
         else
         {
-            crow::response rsp;
-            rsp.code = 404;
-            rsp.set_header("Content-Type","text/plain");
-            rsp.write("Not found");
+            std::unique_ptr<crow::response> rsp = std::make_unique<crow::response>();
+            rsp->code = 404;
+            rsp->set_header("Content-Type","text/plain");
+            rsp->write("Not found");
             return rsp;            
         }
     }
@@ -155,9 +155,9 @@ crow::response files_listing_controller::get(const std::string& path) const
         }
     }
     json_files.insert({"files",picojson::value(files_list)});
-    crow::response rsp;
-    rsp.code = 200;
-    rsp.set_header("Content-Type","application/json; charset=UTF-8");
-    rsp.write(picojson::value(json_files).serialize());
+    std::unique_ptr<crow::response> rsp = std::make_unique<crow::response>();
+    rsp->code = 200;
+    rsp->set_header("Content-Type","application/json; charset=UTF-8");
+    rsp->write(picojson::value(json_files).serialize());
     return rsp;
 }
