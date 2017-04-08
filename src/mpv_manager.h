@@ -4,9 +4,11 @@
 #include "picojson.h"
 #include "http_config.h"
 #include <string>
+#include <vector>
 #include <memory>
 #include <mpv/client.h>
 #include <log4cplus/logger.h>
+
 struct mpv_handle_deleter
 {
   void operator()(mpv_handle* handle)
@@ -28,6 +30,12 @@ struct mpv_status
     bool seekable = false;
     picojson::value tracks;
 };
+struct mpv_playlist_entry
+{
+    std::string filename = "";
+    bool playing = false;
+};
+
 class mpv_manager
 {
 public:
@@ -35,6 +43,15 @@ public:
     ~mpv_manager();
     void play(const std::string& path);
     void play_youtube(const std::string& youtube_url);
+    void add_to_playlist(const std::string& path);
+    void add_to_playlist_play(const std::string& path);
+    void playlist_next();
+    void playlist_previous();
+    void playlist_clear();
+    void playlist_remove(int index = -1);
+    void playlist_move(int index1, int index2);
+    void playlist_shuffle();
+    std::vector<mpv_playlist_entry> get_playlist() const;
     void stop();
     void quit();
     void pause();

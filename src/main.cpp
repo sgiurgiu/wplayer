@@ -81,8 +81,8 @@ void setup_routes(crow::SimpleApp& app,file_controller& files,files_listing_cont
     .onclose([&ps](crow::websocket::connection& conn, const std::string& /*reason*/){
         ps.remove_connection(&conn);
     })
-    .onmessage([&ps](crow::websocket::connection& /*conn*/, const std::string& data, bool /*is_binary*/){
-        ps.handle_message(data);
+    .onmessage([&ps](crow::websocket::connection& conn, const std::string& data, bool /*is_binary*/){
+        ps.handle_message(data,conn);
     });    
     
     CROW_ROUTE(app,"/api/files/<path>")
@@ -124,6 +124,11 @@ void setup_routes(crow::SimpleApp& app,file_controller& files,files_listing_cont
         return std::move(*files.get_file_contents("index.html"));
     });
     CROW_ROUTE(app,"/settings")
+    .methods("GET"_method)
+    ([&files]() {
+        return std::move(*files.get_file_contents("index.html"));
+    });
+    CROW_ROUTE(app,"/playlist")
     .methods("GET"_method)
     ([&files]() {
         return std::move(*files.get_file_contents("index.html"));

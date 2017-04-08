@@ -1,0 +1,28 @@
+<div class="row">
+    <div class="col-lg-5">
+        <h4>Playlist</h4>
+    </div>        
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-condensed">
+            <thead>
+                <td width="1%">#</td>
+                <td width="100%">Name</td>
+
+                <td width="15%"></td>
+            </thead>
+            <tbody>
+                <tr ng-repeat="file in $ctrl.current_playlist" >
+                    <td>{{$index+1}}</td>
+                    <td>                    
+                        <span>{{file.file_name}}</span>
+                    </td>
+                    <td>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

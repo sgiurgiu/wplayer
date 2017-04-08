@@ -4,7 +4,6 @@
 	<div ng-if="$ctrl.cur_dir">Current directory: {{$ctrl.cur_dir}}</div>
     </div>
     <div class="col-md-6">
-        
             <div class="form-group">            
                 <div class="input-group col-sm-12">
                     <input type="search" ng-model="$ctrl.searchText" class="form-control" placeholder="Search" aria-describedby="searchIcon">                    
@@ -21,10 +20,10 @@
         <i  class="fa fa-spinner fa-spin fa-5x pull-center" aria-hidden="true"></i>
     </div>
 </div>
-<div class="row" ng-if="!$ctrl.loading && $ctrl.playStartedSuccess">
+<div class="row" ng-if="!$ctrl.loading && $ctrl.message != null">
 <div class="col-md-12">
     <div class="alert alert-info">
-        <button type="button" class="close" data-ng-click="$ctrl.closeMessage()">×</button>Play started</div>
+        <button type="button" class="close" data-ng-click="$ctrl.closeMessage()">×</button>{{$ctrl.message}}</div>
     </div>
 </div>    
 </div>
@@ -35,21 +34,32 @@
 		<thead>
 			<td width="1%">#</td>
 			<td width="50%">Name</td>
-                        <td width="15%">Size</td>
-                        <td width="15%"></td>
+            <td width="15%">Size</td>
+            <td width="15%"></td>
 		</thead>
 		<tbody>
 			<tr ng-repeat="file in $ctrl.files_list|filter:$ctrl.searchText">
 				<td>{{$index+1}}</td>
 				<td>
 					<i class="fa {{file.type==='dir'?'fa-folder':(file.type==='updir'?'fa-level-up':'fa-file')}}"></i>
-                                        <a ng-if="file.type==='dir' || file.type==='updir'" href="#!/movies/{{file.link}}">{{file.name}}</a>
-                                        <span ng-if="file.type==='file'">{{file.name}}</span>
+                    <a ng-if="file.type==='dir' || file.type==='updir'" href="#!/movies/{{file.link}}">{{file.name}}</a>
+                    <span ng-if="file.type==='file'">{{file.name}}</span>
 				</td>
-                                <td>{{(file.type==='file'?file.size:'')|bytes}}</td>
-                                <td>
-                                        <button class="btn btn-default pull-right" ng-if="!file.parent" ng-click="$ctrl.playFile(file)"><i class="fa fa-play-circle-o" aria-hidden="true"></i></button>
-                                </td>
+                <td>{{(file.type==='file'?file.size:'')|bytes}}</td>
+                <td>
+                    <div class="btn-group pull-right" uib-dropdown ng-if="!file.parent">
+                        <button type="button" id="play-button" class="btn btn-default" ng-click="$ctrl.playFile(file)"><i class="fa fa-play-circle-o" aria-hidden="true"></i></button>
+                        <button type="button" class="btn btn-default" uib-dropdown-toggle>
+                            <span class="caret"></span>
+                            <span class="sr-only">Split button!</span>
+                        </button>
+                        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="play-button">
+                            <li role="menuitem"><a href="" ng-click="$ctrl.playFile(file)">Play</a></li>
+                            <li role="menuitem"><a href="" ng-click="$ctrl.addToPlaylist(file)">Add To Playlist</a></li>
+                            <li role="menuitem"><a href="" ng-click="$ctrl.addToPlaylistPlay(file)">Add To Playlist And Play</a></li>
+                        </ul>
+                    </div>
+                </td>
 			</tr>
 		</tbody>
 	</table>

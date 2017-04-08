@@ -35,10 +35,20 @@ public:
     void stop();
     void add_connection(crow::websocket::connection* connection);
     void remove_connection(crow::websocket::connection* connection);
-    void handle_message(const std::string& msg);
+    void handle_message(const std::string& msg,crow::websocket::connection& conn);
 private:    
     void play_command(const picojson::value& val);
     void play_youtube_command(const picojson::value& val);
+    void add_to_playlist_command(const picojson::value& val);
+    void add_to_playlist_play_command(const picojson::value& val);
+    void playlist_next_command(const picojson::value&);
+    void playlist_previous_command(const picojson::value&);
+    void playlist_clear_command(const picojson::value&);
+    void playlist_remove_command(const picojson::value& val);
+    void playlist_move_command(const picojson::value& val);
+    void playlist_shuffle_command(const picojson::value&);
+    void get_playlist_command(const picojson::value&,crow::websocket::connection& conn);
+    
     void stop_command(const picojson::value&);
     void pause_command(const picojson::value&);
     void resume_command(const picojson::value&);
@@ -52,8 +62,11 @@ private:
     void setup_ws_server();
     void setup_polling_thread();
     void report_status(crow::websocket::connection* connection,mpv_status& status);
-private:    
-    std::atomic_bool done_polling;    
+private:
+    int64_t get_int64_val(const picojson::value& val,int64_t default_val = 0) const;
+    std::string get_file_to_play(const picojson::value& val) const;
+private:
+    std::atomic_bool done_polling;
     std::unique_ptr<mpv_manager> mpv;
     database* db;
     log4cplus::Logger logger;

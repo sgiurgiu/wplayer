@@ -20,29 +20,7 @@
 
   <body>
 
-    <div class="navbar navbar-default navbar-fixed-top">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="/"><img height="25" width="25" src="/img/logo_black.png"/></a>
-        </div>
-        <div class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-            <li ng-class="current_active"><a href="#!/current"><i class="fa fa-play-circle"></i> Now Playing</a></li>            
-            <li ng-class="movies_active"><a href="#!/movies"><i class="fa fa-film"></i> Movies</a></li>
-            <li ng-class="custom_active"><a href="#!/custom"><i class="fa fa-youtube-play"></i> Custom</a></li>
-          </ul>
-
-          <ul class="nav navbar-nav navbar-right">
-            <li ng-class="settings_active"><a href="#!/settings"><i class="fa fa-gear"></i> Settings</a></li>
-          </ul>
-        </div><!--/.nav-collapse -->
-      </div>
-    </div>
+    <navbar></navbar>
 
     <div class="container">
 
@@ -74,6 +52,8 @@
     <script src="/js/movies.js"></script>
     <script src="/js/custom.js"></script>
     <script src="/js/settings.js"></script>
+    <script src="/js/playlist.js"></script>
+    <script src="/js/navbar.js"></script>
     <script src="/js/settings_multimedia_sets.js"></script>
     <script src="/js/settings_advanced.js"></script>
     <script src="/js/sets.service.js"></script>

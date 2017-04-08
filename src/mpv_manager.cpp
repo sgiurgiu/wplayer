@@ -2,7 +2,7 @@
 #include <log4cplus/loggingmacros.h>
 #include <iostream>
 #include <thread>
-
+#include <string.h>
 #include <boost/variant.hpp>
 
 class mpv_option_visitor
@@ -32,28 +32,21 @@ public:
         mpv_set_option(handle, key.c_str(), MPV_FORMAT_DOUBLE, &d);
     }
 };
-#include <string.h>
+
 mpv_manager::mpv_manager(const http_config& config)
     :handle(mpv_create(),mpv_handle_deleter()),logger(log4cplus::Logger::getInstance("mpv_manager"))
 {
-    //const char* env = "DISPLAY=:0";
+
     for(const auto& env : config.environment)
     {
         putenv((char*)env.c_str());
     }
-        
+
     for(const auto& pair : config.player_properties)
     {
         boost::apply_visitor(mpv_option_visitor(pair.first,handle.get()),pair.second);
     }
 
-    //mpv_set_option_string(handle.get(),"no-input-default-bindings","");
-    //mpv_set_option_string(handle.get(), "msg-level", "all=v");
-    //mpv_set_option_string(handle.get(), "fullscreen","");
-    //mpv_set_option_string(handle.get(), "ontop","");
-    //mpv_set_option_string(handle.get(), "no-border","");
-    //mpv_set_option_string(handle.get(), "cursor-autohide","always");
-    
     mpv_request_event(handle.get(),MPV_EVENT_LOG_MESSAGE,0);
     mpv_request_event(handle.get(),MPV_EVENT_GET_PROPERTY_REPLY,0);
     mpv_request_event(handle.get(),MPV_EVENT_SET_PROPERTY_REPLY,0);
@@ -90,9 +83,9 @@ mpv_manager::mpv_manager(const http_config& config)
                 break;
             }
             std::string ev_name(mpv_event_name(mp_event->event_id));
-            LOG4CPLUS_DEBUG(logger, "event: "<< ev_name);                        
+            LOG4CPLUS_DEBUG(logger, "event: "<< ev_name);
         }
-        mpv_command_string(handle.get(),"stop");    
+        mpv_command_string(handle.get(),"stop");
     });
    t.detach();
 }
@@ -170,6 +163,86 @@ void mpv_manager::play(const std::string& path)
     const char* cmd[] = {"loadfile", path.c_str(), "replace",nullptr};
     mpv_command(handle.get(),cmd);
 }
+std::vector<mpv_playlist_entry> mpv_manager::get_playlist() const
+{
+    std::vector<mpv_playlist_entry> playlist;
+    mpv_node playlist_node;
+    if(mpv_get_property(handle.get(),"playlist",MPV_FORMAT_NODE,&playlist_node) < 0)
+    {
+        return playlist;
+    }
+    if(playlist_node.format == MPV_FORMAT_NODE_ARRAY)
+    {
+        mpv_node_list* list = playlist_node.u.list;
+        for(int i=0;i<list->num;i++)
+        {            
+            mpv_node entry_node = list->values[i];
+            if(entry_node.format == MPV_FORMAT_NODE_MAP)
+            {
+                mpv_playlist_entry playlist_entry;
+                mpv_node_list* entry_list = entry_node.u.list;
+                for(int j=0;j<entry_list->num;j++)
+                {
+                    mpv_node node = entry_list->values[j];
+                    if(std::string(entry_list->keys[j]) == "filename")
+                    {
+                        playlist_entry.filename = node.u.string;
+                    }
+                    if(std::string(entry_list->keys[j]) == "playing")
+                    {
+                        playlist_entry.playing = (node.u.flag==1);
+                    }
+                }
+                playlist.push_back(playlist_entry);
+            }
+        }
+    }
+    mpv_free_node_contents(&playlist_node);
+    return playlist;
+}
+void mpv_manager::add_to_playlist(const std::string& path)
+{
+    const char* cmd[] = {"loadfile", path.c_str(), "append",nullptr};
+    mpv_command(handle.get(),cmd);    
+}
+void mpv_manager::add_to_playlist_play(const std::string& path)
+{
+    const char* cmd[] = {"loadfile", path.c_str(), "append-play",nullptr};
+    mpv_command(handle.get(),cmd);    
+}
+void mpv_manager::playlist_remove(int index)
+{
+    std::string str_index = "current";
+    if(index >= 0)
+    {
+        str_index = std::to_string(index);
+    }
+    const char* cmd[] = {"playlist-remove", str_index.c_str(),nullptr};
+    mpv_command(handle.get(),cmd);
+}
+void mpv_manager::playlist_move(int index1, int index2)
+{
+    const char* cmd[] = {"playlist-move", std::to_string(index1).c_str(), std::to_string(index2).c_str(),nullptr};
+    mpv_command(handle.get(),cmd);
+}
+
+void mpv_manager::playlist_shuffle()
+{
+    mpv_command_string(handle.get(),"playlist-shuffle");
+}
+void mpv_manager::playlist_previous()
+{
+    mpv_command_string(handle.get(),"playlist-prev");
+}
+void mpv_manager::playlist_next()
+{
+    mpv_command_string(handle.get(),"playlist-next");
+}
+void mpv_manager::playlist_clear()
+{
+    mpv_command_string(handle.get(),"playlist-clear");
+}
+
 void mpv_manager::stop()
 {
     mpv_command_string(handle.get(),"stop");    

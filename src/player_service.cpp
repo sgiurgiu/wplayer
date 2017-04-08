@@ -23,6 +23,15 @@ player_service::player_service(const http_config& config,database* db):done_poll
     handlers_map["seek-percent"]=std::bind(&player_service::seek_percent_command,this,_1);
     handlers_map["youtube"]=std::bind(&player_service::play_youtube_command,this,_1);  
     handlers_map["remove-sub"]=std::bind(&player_service::remove_sub_command,this,_1);  
+
+    handlers_map["playlist-add"]=std::bind(&player_service::add_to_playlist_command,this,_1);  
+    handlers_map["playlist-add-play"]=std::bind(&player_service::add_to_playlist_play_command,this,_1);  
+    handlers_map["playlist-next"]=std::bind(&player_service::playlist_next_command,this,_1);  
+    handlers_map["playlist-previous"]=std::bind(&player_service::playlist_previous_command,this,_1);  
+    handlers_map["playlist-clear"]=std::bind(&player_service::playlist_clear_command,this,_1);  
+    handlers_map["playlist-remove"]=std::bind(&player_service::playlist_remove_command,this,_1);  
+    handlers_map["playlist-move"]=std::bind(&player_service::playlist_move_command,this,_1);  
+    handlers_map["playlist-shuffle"]=std::bind(&player_service::playlist_shuffle_command,this,_1);  
     
     setup_polling_thread();
 }
@@ -57,6 +66,7 @@ void player_service::add_connection(crow::websocket::connection* connection)
     mpv_status status = mpv->get_mpv_status();
     report_status(connection,status);
 }
+
 void player_service::remove_connection(crow::websocket::connection* connection)
 {
     std::lock_guard<std::mutex> lock(mtx);
@@ -80,32 +90,39 @@ void player_service::report_status(crow::websocket::connection* connection,mpv_s
     connection->send_text(picojson::value(status_obj).serialize());    
 }
 
-void player_service::handle_message(const std::string& msg)
+void player_service::handle_message(const std::string& msg,crow::websocket::connection& conn)
 {
     LOG4CPLUS_DEBUG(logger, "Server: Message received: \"" << msg);  
     picojson::value msg_val;
     std::string err = picojson::parse(msg_val, msg);
     if(!err.empty())
     {
-        LOG4CPLUS_ERROR(logger, "Message not json "<<msg<<". Error:"<<err);                  
+        LOG4CPLUS_ERROR(logger, "Message not json "<<msg<<". Error:"<<err);
         return;
     }
     auto name_obj = msg_val.get("name");
     if(name_obj.is<picojson::null>())
     {
-        LOG4CPLUS_ERROR(logger, msg<<" has no name");                  
+        LOG4CPLUS_ERROR(logger, msg<<" has no name");
         return;        
     }
     const std::string& command_name = name_obj.get<std::string>();
-    auto it = handlers_map.find(command_name);
-    if(it == handlers_map.end())
+    if(command_name == "playlist") //special command, only one so far
     {
-        LOG4CPLUS_ERROR(logger, "Unknown command "<<command_name);                       
+        get_playlist_command(msg_val,conn);
     }
     else
     {
-        //execute it
-        it->second(msg_val);        
+        auto it = handlers_map.find(command_name);
+        if(it == handlers_map.end())
+        {
+            LOG4CPLUS_ERROR(logger, "Unknown command "<<command_name);
+        }    
+        else
+        {
+            //execute it
+            it->second(msg_val);
+        }
     }
 }
 void player_service::volume_command(const picojson::value& val)
@@ -125,13 +142,21 @@ void player_service::volume_command(const picojson::value& val)
 
 void player_service::play_command(const picojson::value& val)
 {
+    auto file_to_play = get_file_to_play(val);
+    if(!file_to_play.empty())
+    {
+        mpv->play(file_to_play);
+    }
+}
+std::string player_service::get_file_to_play(const picojson::value& val) const
+{
     auto link_obj = val.get("link");
     if(link_obj.is<picojson::null>())
     {
-        LOG4CPLUS_ERROR(logger, val<<" has no link");                  
-        return;        
+        LOG4CPLUS_ERROR(logger, val<<" has no link");
+        return "";
     }
-    const std::string& link = link_obj.get<std::string>();    
+    const std::string& link = link_obj.get<std::string>();
     boost::filesystem::path link_path(link);
     auto path_it = link_path.begin();
     boost::filesystem::path set_path = *path_it;
@@ -143,33 +168,96 @@ void player_service::play_command(const picojson::value& val)
     }
     auto set_folder = db->get_target_multimedia_folder(set_path.string());
     if(!set_folder.empty())
-    {        
+    {
         boost::filesystem::path file_to_play(set_folder);
         file_to_play /= path_to_file;
         LOG4CPLUS_DEBUG(logger, "Playing "<<file_to_play);
         if(exists(file_to_play))
         {
-            mpv->play(file_to_play.string());
-        }        
+            return file_to_play.string();
+        }
+    }
+    return "";
+}
+
+void player_service::add_to_playlist_command(const picojson::value& val)
+{
+    auto file_to_play = get_file_to_play(val);
+    if(!file_to_play.empty())
+    {
+        mpv->add_to_playlist(file_to_play);
+    }    
+}
+void player_service::add_to_playlist_play_command(const picojson::value& val)
+{
+    auto file_to_play = get_file_to_play(val);
+    if(!file_to_play.empty())
+    {
+        mpv->add_to_playlist_play(file_to_play);
     }
 }
-void player_service::remove_sub_command(const picojson::value& val)
+void player_service::playlist_clear_command(const picojson::value&)
 {
-    auto sub_id = val.get("value");
-    int64_t id = 0;
-    if(sub_id.is<double>())
+    mpv->playlist_clear();
+}
+void player_service::playlist_next_command(const picojson::value&)
+{
+    mpv->playlist_next();
+}
+void player_service::playlist_previous_command(const picojson::value&)
+{
+    mpv->playlist_previous();
+}
+void player_service::playlist_shuffle_command(const picojson::value&)
+{
+    mpv->playlist_shuffle();
+}
+void player_service::playlist_move_command(const picojson::value& val)
+{
+    int64_t index1 = get_int64_val(val.get("value1"));
+    int64_t index2 = get_int64_val(val.get("value2"));
+    mpv->playlist_move((int)index1,(int)index2);
+}
+void player_service::playlist_remove_command(const picojson::value& val)
+{
+    int64_t index = get_int64_val(val.get("value"));    
+    mpv->playlist_remove((int)index);    
+}
+void player_service::get_playlist_command(const picojson::value&,crow::websocket::connection& conn)
+{
+    auto playlist = mpv->get_playlist();
+    picojson::array playlist_arrray;
+    for(const auto& entry : playlist)
     {
-        id = (int64_t)sub_id.get<double>();
+        picojson::object entry_obj;
+        entry_obj.insert({"file_name",picojson::value(entry.filename)});
+        entry_obj.insert({"playing",picojson::value(entry.playing)});
+        playlist_arrray.push_back(picojson::value(entry_obj));
     }
-    else if(sub_id.is<int64_t>())
+    conn.send_text(picojson::value(playlist_arrray).serialize());
+}
+int64_t player_service::get_int64_val(const picojson::value& val,int64_t default_val) const
+{
+    int64_t id = default_val;
+    if(val.is<double>())
     {
-        id = sub_id.get<int64_t>();
+        id = (int64_t)val.get<double>();
+    }
+    else if(val.is<int64_t>())
+    {
+        id = val.get<int64_t>();
     }
     else 
     {
-        id = std::stol(sub_id.get<std::string>());
+        id = std::stol(val.get<std::string>());
     }
-    
+    return id;
+}
+
+void player_service::remove_sub_command(const picojson::value& val)
+{
+    auto sub_id = val.get("value");
+    int64_t id = get_int64_val(sub_id);
     mpv->remove_sub(id);
 }
 
@@ -213,7 +301,7 @@ void player_service::seek_percent_command(const picojson::value& val)
     else
     {
         percent = std::stod(percent_obj.get<std::string>());
-    }    
+    }
     mpv->seek_percent(percent);
 }
 void player_service::play_youtube_command(const picojson::value& val)

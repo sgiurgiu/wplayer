@@ -5,8 +5,8 @@ angular.module('movies').component('movies', {
     controller:['$routeParams','$log','$location','$timeout','Files','Player',  function($routeParams,$log,$location,$timeout,Files,Player) {
         var self = this;
         self.loading = true;
-        self.playStartedSuccess = false;
-	self.files_list = [];
+        self.message = null;
+        self.files_list = [];
         self.original_file_list=[];
         Files.list({'path':$routeParams.path},function(data){
             self.loading = false;
@@ -17,16 +17,30 @@ angular.module('movies').component('movies', {
         }, function(error){
             self.loading = false;   
         });
-
-	self.playFile = function(file) {
-            Player.playFile(file);
-            self.playStartedSuccess = true;
+        
+        self.addToPlaylist = function(file) {
+            Player.addToPlaylist(file);
+            self.message = "Added to playlist";
             $timeout(function(){
-                self.playStartedSuccess = false;
+                self.message = null;
+            },5000);
+        };
+        self.addToPlaylistPlay = function(file) {
+            Player.addToPlaylistPlay(file);
+            self.message = "Added to playlist and started playing";
+            $timeout(function(){
+                self.message = null;
+            },5000);            
+        };        
+        self.playFile = function(file) {
+            Player.playFile(file);
+            self.message = "Playing file";
+            $timeout(function(){
+                self.message = null;
             },5000);
         };
         self.closeMessage = function(){
-            self.playStartedSuccess = false;
+            self.message = null;
         };
         
         self.searchText = "";
