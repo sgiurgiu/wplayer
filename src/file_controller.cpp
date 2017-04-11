@@ -16,7 +16,6 @@ file_controller::~file_controller() = default;
 
 std::unique_ptr<crow::response> file_controller::get_file_contents(const std::string& file)
 {
-    
     std::unique_ptr<crow::response> rsp = std::make_unique<crow::response>();
     try
     {

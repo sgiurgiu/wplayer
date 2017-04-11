@@ -2,6 +2,13 @@
     <div class="col-lg-5">
         <h4>Playlist</h4>
     </div>        
+    <div class="col-lg-5">
+        <button type="button" class="btn btn-default" ng-click="$ctrl.playPrevious()">Play Previous</button>
+        <button type="button" class="btn btn-default" ng-click="$ctrl.shuffle()">Shuffle</button>
+        <button type="button" class="btn btn-default" ng-click="$ctrl.clear()">Clear</button>        
+        <button type="button" class="btn btn-default" ng-click="$ctrl.playNext()">Play Next</button>
+    </div>        
+    
 </div>
 
 <div class="row">
@@ -9,17 +16,23 @@
         <table class="table table-condensed">
             <thead>
                 <td width="1%">#</td>
-                <td width="100%">Name</td>
+                <td width="80%">Name</td>
 
                 <td width="15%"></td>
             </thead>
             <tbody>
-                <tr ng-repeat="file in $ctrl.current_playlist" >
+                <tr ng-repeat="file in $ctrl.current_playlist" ng-class="{active : $ctrl.highlightedFile === file, info: file.playing}" ng-mouseover="$ctrl.fileHighlighted(file)"  ng-mouseleave="$ctrl.fileHighlighted(null)">
                     <td>{{$index+1}}</td>
                     <td>                    
-                        <span>{{file.file_name}}</span>
+                        <span>{{file.file_name|fileName}}</span>
                     </td>
                     <td>
+                        <div class="btn-group pull-right" ng-if="$ctrl.highlightedFile === file">
+                            <button type="button" class="btn btn-default btn-xs" ng-if="!$first" ng-click="$ctrl.moveUp($index)" title="Move Up"><i class="fa  fa-chevron-up" aria-hidden="true"></i></button>
+                            <!-- MPV doesn't like move down ... yet-->
+                            <!-- <button type="button" class="btn btn-default btn-xs" ng-if="!$last" ng-click="$ctrl.moveDown($index)" title="Move Down"><i class="fa  fa-chevron-down" aria-hidden="true"></i></button> -->
+                            <button type="button" class="btn btn-danger btn-xs" ng-click="$ctrl.delete($index)" title="Delete"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                        </div>                    
                     </td>
                 </tr>
             </tbody>

@@ -8,6 +8,7 @@ angular.module('movies').component('movies', {
         self.message = null;
         self.files_list = [];
         self.original_file_list=[];
+        self.highlightedFile = null;
         Files.list({'path':$routeParams.path},function(data){
             self.loading = false;
             self.cur_dir = data.cur_dir;
@@ -41,6 +42,12 @@ angular.module('movies').component('movies', {
         };
         self.closeMessage = function(){
             self.message = null;
+        };
+        self.getRowClass = function(file) {
+            return self.highlightedFile === file ? "active" : "";
+        };
+        self.fileHighlighted = function(file) {
+            self.highlightedFile = file;
         };
         
         self.searchText = "";

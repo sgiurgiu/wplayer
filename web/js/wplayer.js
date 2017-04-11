@@ -39,3 +39,13 @@ wplayerApp.filter('duration', function() {
         return mom.format('HH:mm:ss');
     }
 });
+wplayerApp.filter('fileName', function() {
+    return function(file) {
+        var lastIndex = file.lastIndexOf('/');
+        if(lastIndex >= 0)
+        {
+            return file.substring(lastIndex+1);
+        }
+        return file;
+    }
+});

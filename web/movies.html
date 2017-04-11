@@ -38,7 +38,7 @@
             <td width="15%"></td>
 		</thead>
 		<tbody>
-			<tr ng-repeat="file in $ctrl.files_list|filter:$ctrl.searchText">
+			<tr ng-repeat="file in $ctrl.files_list|filter:$ctrl.searchText" ng-class="{active : $ctrl.highlightedFile === file}" ng-mouseover="$ctrl.fileHighlighted(file)"  ng-mouseleave="$ctrl.fileHighlighted(null)">
 				<td>{{$index+1}}</td>
 				<td>
 					<i class="fa {{file.type==='dir'?'fa-folder':(file.type==='updir'?'fa-level-up':'fa-file')}}"></i>
@@ -47,17 +47,10 @@
 				</td>
                 <td>{{(file.type==='file'?file.size:'')|bytes}}</td>
                 <td>
-                    <div class="btn-group pull-right" uib-dropdown ng-if="!file.parent">
-                        <button type="button" id="play-button" class="btn btn-default" ng-click="$ctrl.playFile(file)"><i class="fa fa-play-circle-o" aria-hidden="true"></i></button>
-                        <button type="button" class="btn btn-default" uib-dropdown-toggle>
-                            <span class="caret"></span>
-                            <span class="sr-only">Split button!</span>
-                        </button>
-                        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="play-button">
-                            <li role="menuitem"><a href="" ng-click="$ctrl.playFile(file)">Play</a></li>
-                            <li role="menuitem"><a href="" ng-click="$ctrl.addToPlaylist(file)">Add To Playlist</a></li>
-                            <li role="menuitem"><a href="" ng-click="$ctrl.addToPlaylistPlay(file)">Add To Playlist And Play</a></li>
-                        </ul>
+                    <div class="btn-group pull-right" ng-if="!file.parent && $ctrl.highlightedFile === file">
+                        <button type="button" class="btn btn-default btn-xs" ng-click="$ctrl.playFile(file)" title="Play"><i class="fa fa-play-circle-o" aria-hidden="true"></i></button>
+                        <button type="button" class="btn btn-default btn-xs" ng-click="$ctrl.addToPlaylist(file)" title="Add To Playlist"><i class="fa fa-plus" aria-hidden="true"></i></button>
+                        <button type="button" class="btn btn-default btn-xs" ng-click="$ctrl.addToPlaylistPlay(file)" title="Add To Playlist and Play"><i class="fa fa-plus-circle" aria-hidden="true"></i></button>                        
                     </div>
                 </td>
 			</tr>

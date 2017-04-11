@@ -223,7 +223,8 @@ void mpv_manager::playlist_remove(int index)
 void mpv_manager::playlist_move(int index1, int index2)
 {
     const char* cmd[] = {"playlist-move", std::to_string(index1).c_str(), std::to_string(index2).c_str(),nullptr};
-    mpv_command(handle.get(),cmd);
+    int res = mpv_command(handle.get(),cmd);
+    LOG4CPLUS_DEBUG(logger, "playlist-move "<< index1<< " to " << index2<< " result "<<res );
 }
 
 void mpv_manager::playlist_shuffle()
